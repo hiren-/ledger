@@ -255,7 +255,7 @@
 
   <div id="emptyState" class="empty-state">
     <h1 id="loadHeadline">Reading the ticker tape…</h1>
-    <p id="loadSub">Loading <code>piotroski_india.csv</code> from this folder. Everything below — scores, ratings, and the search — runs entirely in this page, on your machine.</p>
+    <p id="loadSub">Loading <code>Data</code> from this folder. Everything below — scores, ratings, and the search — runs entirely in this page, on your machine.</p>
   </div>
 
   <div id="appRoot" class="hidden">
@@ -263,6 +263,7 @@
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="fundamentals">Fundamentals</button>
       <button class="tab-btn" data-tab="technicals">Technicals</button>
+      <button class="tab-btn" data-tab="sector">Sector View</button>
       <button class="tab-btn" data-tab="search">Symbol Search</button>
       <button class="tab-btn" data-tab="suggestions">Suggestions</button>
     </div>
@@ -330,6 +331,32 @@
         <h3>Full technicals table <small id="techCount"></small></h3>
         <div class="table-scroll">
           <table id="techTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTOR VIEW -->
+    <div class="tab-panel" id="tab-sector">
+      <div class="filters" style="margin-bottom:18px;">
+        <label>Sector
+          <select id="sectorSelect"></select>
+        </label>
+      </div>
+      <div class="grid kpis" id="sectorKpiRow" style="margin-bottom:18px;"></div>
+      <div class="grid two" style="margin-bottom:18px;">
+        <div class="card">
+          <h3>Rating mix <small id="sectorRatingSub">within selected sector</small></h3>
+          <canvas id="chartSectorRatings" height="240"></canvas>
+        </div>
+        <div class="card">
+          <h3>Piotroski score spread</h3>
+          <canvas id="chartSectorPiotroski" height="240"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Sector table — fundamentals, technicals &amp; suggestion <small id="sectorCount"></small></h3>
+        <div class="table-scroll">
+          <table id="sectorTable"></table>
         </div>
       </div>
     </div>
@@ -422,7 +449,7 @@ const state = { sort: {fund:{key:'Piotroski_F_Score',dir:-1}, tech:{key:'Tech_Ra
 ============================================================ */
 document.getElementById('themeToggle').addEventListener('click', () => {
   const b = document.body;
-  const next = b.getAttribute('data-theme') === 'dark' ? 'light' : 'light';
+  const next = b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   b.setAttribute('data-theme', next);
   refreshChartTheme();
 });
@@ -579,6 +606,7 @@ function renderAll(){
   renderFundamentals();
   renderTechnicals();
   renderRatingConsensus();
+  renderSectorView(true);
   runScreen();
 }
 
@@ -615,6 +643,125 @@ function renderRatingConsensus(){
 
   document.getElementById('strongBuyList').innerHTML = renderList(buys, 'buyCount', 'buy');
   document.getElementById('strongSellList').innerHTML = renderList(sells, 'sellCount', 'sell');
+}
+
+/* ============================================================
+   SECTOR VIEW
+============================================================ */
+state.sort.sector = { key:'Piotroski_F_Score', dir:-1 };
+
+function sectorSuggestion(r){
+  const buyFlags = [r.Tech_Rating, r.MA_Rating, r.Oscillator_Rating].filter(f => f==='Strong Buy').length;
+  const sellFlags = [r.Tech_Rating, r.MA_Rating, r.Oscillator_Rating].filter(f => f==='Strong Sell').length;
+  const strongFundamentals = r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 7 && r.ROE !== null && r.ROE >= 15 && (r.Debt_to_Equity===null || r.Debt_to_Equity <= 1);
+  const weakFundamentals = r.Piotroski_F_Score !== null && r.Piotroski_F_Score <= 3;
+
+  if (strongFundamentals && buyFlags >= 2) return {label:'Strong Buy', cls:'buy'};
+  if (strongFundamentals && buyFlags >= 1) return {label:'Accumulate', cls:'buy'};
+  if (weakFundamentals && sellFlags >= 2) return {label:'Avoid', cls:'sell'};
+  if (sellFlags >= 2 && !strongFundamentals) return {label:'Reduce', cls:'sell'};
+  if (strongFundamentals) return {label:'Watch — fundamentals strong', cls:'neutral'};
+  return {label:'Neutral', cls:'neutral'};
+}
+
+function renderSectorView(rebuildDropdown){
+  if (!RAW.length) return;
+  const sel = document.getElementById('sectorSelect');
+
+  if (rebuildDropdown){
+    const sectorCounts = {};
+    RAW.forEach(r => { const s = r.sector || 'Unclassified'; sectorCounts[s] = (sectorCounts[s]||0)+1; });
+    const sectors = Object.entries(sectorCounts).sort((a,b)=>b[1]-a[1]);
+    sel.innerHTML = sectors.map(s => `<option value="${s[0]}">${s[0]} (${s[1]})</option>`).join('');
+    sel.removeEventListener('change', onSectorChange);
+    sel.addEventListener('change', onSectorChange);
+  }
+
+  const chosen = sel.value || sel.options[0]?.value;
+  if (!chosen) return;
+  const rows = RAW.filter(r => (r.sector || 'Unclassified') === chosen);
+
+  // KPIs for the sector
+  const passers = rows.filter(r => r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 7).length;
+  const strongBuyN = rows.filter(r => r.Tech_Rating === 'Strong Buy').length;
+  const strongSellN = rows.filter(r => r.Tech_Rating === 'Strong Sell').length;
+  const avgRoe = avg(rows.map(r=>r.ROE).filter(v=>v!==null));
+  const avgPe = avg(rows.map(r=>r.PE).filter(v=>v!==null && v>0 && v<200));
+  const totalCap = rows.reduce((s,r)=> s + (r.Market_Cap||0), 0);
+
+  document.getElementById('sectorKpiRow').innerHTML = [
+    ['Stocks in sector', rows.length, ''],
+    ['Piotroski ≥ 7', passers, ((passers/rows.length*100)||0).toFixed(0)+'% of sector'],
+    ['Avg ROE', fmt(avgRoe,1)+'%', ''],
+    ['Avg P/E', fmt(avgPe,1)+'x', ''],
+    ['Strong Buy (tech)', strongBuyN, ''],
+    ['Strong Sell (tech)', strongSellN, ''],
+    ['Combined market cap', fmtCr(totalCap), ''],
+  ].map(k => `<div class="card kpi"><div class="label">${k[0]}</div><div class="value">${k[1]}</div><div class="sub">${k[2]}</div></div>`).join('');
+
+  // Rating mix chart
+  const ratings = ['Strong Sell','Sell','Neutral','Buy','Strong Buy'];
+  const ratingCounts = ratings.map(rt => rows.filter(r=>r.Tech_Rating===rt).length);
+  mkChart('chartSectorRatings','bar', {
+    labels: ratings,
+    datasets:[{ data: ratingCounts, backgroundColor:[cssVar('--down'),'#c65a52',cssVar('--faint'),'#4fcbb0',cssVar('--teal')], borderRadius:4 }]
+  }, { indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}} });
+
+  // Piotroski spread chart
+  const buckets = Array(10).fill(0);
+  rows.forEach(r => { if (r.Piotroski_F_Score!==null) buckets[Math.max(0,Math.min(9,Math.round(r.Piotroski_F_Score)))]++; });
+  mkChart('chartSectorPiotroski','bar', {
+    labels: buckets.map((_,i)=>i),
+    datasets:[{ data: buckets, backgroundColor: buckets.map((_,i)=> i>=7? cssVar('--teal') : cssVar('--border')), borderRadius:4 }]
+  }, { plugins:{legend:{display:false}}, scales:{ x:{title:{display:true,text:'Piotroski F-Score'}}, y:{beginAtZero:true} } });
+
+  renderSectorTable(rows);
+}
+
+function onSectorChange(){ renderSectorView(false); }
+
+function renderSectorTable(rows){
+  const cols = [
+    ['symbol','Symbol'], ['name','Name'],
+    ['Piotroski_F_Score','F-Score'], ['ROE','ROE%',v=>fmt(v,1)], ['ROA','ROA%',v=>fmt(v,1)],
+    ['PE','P/E',v=>fmt(v,1)], ['PB','P/B',v=>fmt(v,1)], ['Debt_to_Equity','D/E',v=>fmt(v,2)],
+    ['Revenue_Growth_YoY','Rev YoY',v=>pct(v)],
+    ['Tech_Rating','Tech',v=>pill(v)], ['MA_Rating','MA',v=>pill(v)], ['Oscillator_Rating','Osc.',v=>pill(v)],
+    ['RSI','RSI',v=>fmt(v,0)], ['Market_Cap','Mkt Cap',v=>fmtCr(v)],
+    ['__suggestion','Suggestion', () => '', true],
+  ];
+
+  const s = state.sort.sector;
+  const sorted = [...rows].sort((a,b) => {
+    if (s.key === '__suggestion') return 0;
+    const av = a[s.key], bv = b[s.key];
+    if (av===null || av===undefined) return 1;
+    if (bv===null || bv===undefined) return -1;
+    if (typeof av === 'string') return s.dir * av.localeCompare(bv);
+    return s.dir * (av - bv);
+  });
+
+  document.getElementById('sectorCount').textContent = rows.length + ' stocks';
+
+  const head = '<thead><tr>' + cols.map(c => `<th data-key="${c[0]}">${c[1]} ${s.key===c[0] ? (s.dir===1?'↑':'↓') : ''}</th>`).join('') + '</tr></thead>';
+  const body = '<tbody>' + sorted.map(r => {
+    const sugg = sectorSuggestion(r);
+    return '<tr onclick="openDetailBySymbol(\''+(r.symbol||'').replace(/'/g,"")+'\')">' +
+      cols.map(c => {
+        if (c[0] === '__suggestion') return `<td><span class="pill ${sugg.cls}">${sugg.label}</span></td>`;
+        return `<td class="${c[0]==='name'?'name-cell':''}">${c[2] ? c[2](r[c[0]]) : (r[c[0]]===null||r[c[0]]===undefined?'—':r[c[0]])}</td>`;
+      }).join('') + '</tr>';
+  }).join('') + '</tbody>';
+
+  const el = document.getElementById('sectorTable');
+  el.innerHTML = head + body;
+  el.querySelectorAll('thead th').forEach(th => th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (key === '__suggestion') return;
+    if (state.sort.sector.key === key) state.sort.sector.dir *= -1;
+    else { state.sort.sector.key = key; state.sort.sector.dir = -1; }
+    renderSectorTable(rows);
+  }));
 }
 
 function renderKpis(){
