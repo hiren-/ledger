@@ -1661,6 +1661,8 @@ def main():
     print(f"\nCSV saved to   : {Path(OUTPUT_CSV).resolve()}")
     print(f"Excel saved to : {Path(OUTPUT_XLSX).resolve()} "
           f"(sheets: All Stocks, Piotroski Pass, Top 5 per Sector, Sector Summary)")
+    df_out.to_csv(OUTPUT_CSV, index=False)
+    df_out.to_excel(OUTPUT_XLSX, index=False, engine="openpyxl")
 
 
 if __name__ == "__main__":
