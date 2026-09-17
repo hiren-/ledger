@@ -2780,6 +2780,113 @@ function renderArchetypeGrid(){
 
 document.getElementById('applyGems').addEventListener('click', runGemScan);
 
+// ════ OHLCV DATA INTEGRATION (Lazy Load) ════
+let OHLCV_DATA = null;
+let OHLCV_LOADING = false;
+
+async function loadOHLCVData() {
+  if (OHLCV_DATA || OHLCV_LOADING) return;
+  OHLCV_LOADING = true;
+  try {
+    const res = await fetch('index.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    OHLCV_DATA = {
+      prices: data.prices || {},
+      meta: (data.fetch_meta || []).reduce((acc, m) => {
+        acc[m.ticker] = m;
+        return acc;
+      }, {}),
+      generated_at: data.generated_at,
+    };
+  } catch (e) {
+    console.warn('OHLCV data load failed:', e.message);
+  }
+}
+
+function getLatestOHLCV(ticker) {
+  if (!OHLCV_DATA) return null;
+  const prices = OHLCV_DATA.prices?.[ticker] || [];
+  if (!prices.length) return null;
+  const latest = prices[prices.length - 1];
+  return {
+    date: latest[0], open: latest[1], high: latest[2], low: latest[3],
+    close: latest[4], volume: latest[5],
+  };
+}
+
+function getOHLCVHistory(ticker, limit = 30) {
+  if (!OHLCV_DATA) return [];
+  const prices = OHLCV_DATA.prices?.[ticker] || [];
+  return prices.slice(Math.max(0, prices.length - limit)).map(p => ({
+    date: p[0], open: p[1], high: p[2], low: p[3], close: p[4], volume: p[5],
+  }));
+}
+
+async function renderOHLCVChart(ticker) {
+  await loadOHLCVData();
+  const history = getOHLCVHistory(ticker, 30);
+  if (!history.length) return;
+
+  const latest = history[history.length - 1];
+  const o = latest.open, h = latest.high, l = latest.low, c = latest.close, v = latest.volume;
+  const pctChg = o && c ? (((c - o) / o) * 100).toFixed(2) : 0;
+  const isUp = c >= o;
+
+  // Close price line chart
+  const closeData = history.map(p => p.close);
+  mkChart('chartOHLCV','line', {
+    labels: history.map(p => p.date),
+    datasets:[{
+      label:'Close',
+      data: closeData,
+      borderColor: isUp ? cssVar('--up') : cssVar('--down'),
+      backgroundColor: isUp ? 'rgba(47,212,180,0.1)' : 'rgba(242,104,92,0.1)',
+      borderWidth: 2,
+      fill: true,
+      pointRadius: 0,
+      tension: 0.3,
+    }],
+  }, {
+    plugins:{ legend:{display:false} },
+    scales:{ y:{ title:{display:true,text:'Price (₹)'} }, x:{ ticks:{maxTicksLimit:8} } }
+  });
+
+  // OHLCV metrics card
+  const html = `
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; font-size:11px;">
+      <div style="background:var(--panel-2); padding:10px; border-radius:6px; text-align:center;">
+        <div style="color:var(--muted); margin-bottom:4px;">Open</div>
+        <div style="font-family:var(--font-mono); font-weight:600; color:var(--text); font-size:13px;">₹${o.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--panel-2); padding:10px; border-radius:6px; text-align:center;">
+        <div style="color:var(--muted); margin-bottom:4px;">High</div>
+        <div style="font-family:var(--font-mono); font-weight:600; color:var(--up); font-size:13px;">₹${h.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--panel-2); padding:10px; border-radius:6px; text-align:center;">
+        <div style="color:var(--muted); margin-bottom:4px;">Low</div>
+        <div style="font-family:var(--font-mono); font-weight:600; color:var(--down); font-size:13px;">₹${l.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--panel-2); padding:10px; border-radius:6px; text-align:center;">
+        <div style="color:var(--muted); margin-bottom:4px;">Vol</div>
+        <div style="font-family:var(--font-mono); font-weight:600; color:var(--text); font-size:13px;">${(v/1e6).toFixed(1)}M</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:8px; font-size:10px; color:var(--muted); font-family:var(--font-mono);">
+      ${pctChg}% · Last: ${latest.date}
+    </div>
+  `;
+  const container = document.getElementById('dMetrics');
+  if (container) container.insertAdjacentHTML('beforebegin', `<div id="ohlcvBlock" class="card" style="margin-bottom:16px;"><h3>OHLCV (30d)</h3><canvas id="chartOHLCV" height="120"></canvas>${html}</div>`);
+}
+
+// Load on detail open
+const origOpenDetail = window.openDetailBySymbol;
+window.openDetailBySymbol = function(sym) {
+  origOpenDetail?.call(this, sym);
+  renderOHLCVChart(sym);
+};
+
 function runGemScan(){
   if (!RAW.length) return;
   const archetype = ARCHETYPES.find(a => a.id === state.archetype) || ARCHETYPES[0];
@@ -2830,3 +2937,5 @@ function runGemScan(){
 </script>
 </body>
 </html>
+
+
