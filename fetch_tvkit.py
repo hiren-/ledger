@@ -73,7 +73,7 @@ LOOKBACK_DAYS        = 800
 
 JSON_OUT             = "index.json"
 
-DEFAULT_WORKERS      = 2
+DEFAULT_WORKERS      = 3
 DEFAULT_CONCUR       = 1
 STARTUP_STAGGER_SEC  = 5.0
 
@@ -84,7 +84,7 @@ MAX_RETRIES          = 4
 RETRY_BACKOFF        = 3.0
 
 INTERVAL             = "1D"
-PROGRESS_EVERY       = 100
+PROGRESS_EVERY       = 500
 
 logging.getLogger("tvkit").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -269,12 +269,19 @@ def load_symbols(csv_path: str) -> pd.DataFrame:
     if col is None:
         raise ValueError("CSV must contain a 'ticker' or 'symbol' column.")
 
+    # Optional columns used purely for the HTML's dedup key.
+    # The HTML groups by `description || name` (displayName), falling back
+    # to the bare symbol if neither is present.
+    name_col = next((c for c in ("description", "name") if c in df.columns), None)
+
     rows: list[dict] = []
     skipped = 0
     sanitized = 0
 
-    for raw in df[col].dropna().astype(str).unique():
-        raw = raw.strip()
+    for _, csv_row in df.iterrows():
+        raw = str(csv_row[col]).strip()
+        if not raw or raw.lower() == "nan":
+            continue
         if ":" in raw:
             exch, sym = raw.split(":", 1)
         else:
@@ -285,15 +292,25 @@ def load_symbols(csv_path: str) -> pd.DataFrame:
             skipped += 1
             continue
 
-        orig_ticker = f"{exch}:{sym}"           # DB key & JSON key
-        safe_tv     = sanitize_tv_symbol(orig_ticker)  # wire symbol
+        orig_ticker = f"{exch}:{sym}"
+        safe_tv     = sanitize_tv_symbol(orig_ticker)
         if safe_tv != orig_ticker:
             sanitized += 1
+
+        # HTML dedup key: description/name if present, else bare symbol —
+        # exactly what displayName(r) || baseSymbol(r) resolves to in the JS.
+        display_name = None
+        if name_col is not None:
+            val = csv_row.get(name_col)
+            if val is not None and str(val).strip().lower() != "nan":
+                display_name = str(val).strip()
+        dedup_key = (display_name or sym).strip().upper()
 
         rows.append({
             "ticker":    orig_ticker,
             "exchange":  exch,
             "tv_symbol": safe_tv,
+            "dedup_key": dedup_key,
         })
 
     if skipped:
@@ -307,6 +324,27 @@ def load_symbols(csv_path: str) -> pd.DataFrame:
 
     out = pd.DataFrame(rows).drop_duplicates("ticker").reset_index(drop=True)
 
+    # ── Mirror the HTML's NSE-preferred dedup so we never fetch a BSE
+    #    listing the frontend will discard in favour of its NSE twin. ──
+    before = len(out)
+    keep_idx: dict[str, int] = {}
+    for idx, r in out.iterrows():
+        key = r["dedup_key"]
+        if key not in keep_idx:
+            keep_idx[key] = idx
+            continue
+        existing = out.loc[keep_idx[key]]
+        if existing["exchange"] != "NSE" and r["exchange"] == "NSE":
+            keep_idx[key] = idx
+    out = out.loc[sorted(keep_idx.values())].drop(columns=["dedup_key"]).reset_index(drop=True)
+    dropped = before - len(out)
+    if dropped:
+        log.info(
+            "Dropped %d BSE-duplicate symbols not used by the HTML "
+            "(NSE listing preferred for the same company)",
+            dropped,
+        )
+
     # Detect sanitization collisions (two originals mapping to same wire sym)
     dup = out.groupby("tv_symbol")["ticker"].apply(list)
     dup = dup[dup.apply(len) > 1]
@@ -316,7 +354,7 @@ def load_symbols(csv_path: str) -> pd.DataFrame:
             "TradingView data:\n%s", dup.to_string(),
         )
 
-    log.info("Loaded %d unique symbols from %s", len(out), csv_path)
+    log.info("Loaded %d unique symbols from %s (post HTML-dedup)", len(out), csv_path)
     return out
 
 
@@ -887,19 +925,7 @@ def main() -> int:
     if args.full:
         log.info("--full set: ignoring delta, refetching %d days for all symbols",
                  LOOKBACK_DAYS)
-    elif meta:
-        already = sum(1 for t in symbols["ticker"] if meta.get(t) == today)
-        known   = sum(1 for t in symbols["ticker"] if t in meta)
-        pct_current = 100 * already / len(symbols) if symbols else 0
-        log.info("Delta plan: %d/%d symbols known to DB; %d (%.0f%%) already current to %s",
-                 known, len(symbols), already, pct_current, today)
-
-        # Smart mode: if >= 80% current, use 1 worker and skip stagger (light fetch)
-        if pct_current >= 80:
-            smart_mode = True
-            args.workers = 1
-            log.info("Smart mode: %.0f%% already current — scaling to 1 worker, "
-                     "skipping stagger", pct_current)
+    
 
     shard_dir = Path(SHARD_DIR)
     if shard_dir.exists():
