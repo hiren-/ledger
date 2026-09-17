@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
   :root{
     --bg:#0B0D10; --panel:#12151A; --panel-2:#181C22; --border:#242A32;
@@ -2405,6 +2406,8 @@ function renderDetail(r){
   document.getElementById('dPrice').textContent = r.Close !== null ? '₹' + fmt(r.Close,2) : '—';
   document.getElementById('dRating').innerHTML = pill(r.Tech_Rating);
 
+  renderOHLCVChart(`${r.exchange}:${r.symbol}`);
+
   const tags = [
     pill(r.Altman_Zone),
     pill(r.Trend_Label),
@@ -2979,7 +2982,7 @@ async function loadOHLCVData() {
   }
 }
 
-function getOHLCVHistory(ticker, limit = 30) {
+function getOHLCVHistory(ticker, limit = Infinity) {
   if (!OHLCV_DATA) return [];
   const prices = OHLCV_DATA.prices?.[ticker] || [];
   return prices.slice(Math.max(0, prices.length - limit)).map(p => ({
@@ -2987,25 +2990,29 @@ function getOHLCVHistory(ticker, limit = 30) {
   }));
 }
 
+let OHLCV_CHART = null;
+let OHLCV_VOL_SERIES = null;
+let OHLCV_CANDLE_SERIES = null;
+
 async function renderOHLCVChart(ticker) {
   await loadOHLCVData();
 
   // Remove any previous block so clicks don't stack
   document.getElementById('ohlcvBlock')?.remove();
+  if (OHLCV_CHART) { OHLCV_CHART.remove(); OHLCV_CHART = null; }
 
   if (!OHLCV_DATA || OHLCV_DATA.unavailable) return;
-  const history = getOHLCVHistory(ticker, 30);
+  const history = getOHLCVHistory(ticker);
   if (!history.length) return;
 
   const latest = history[history.length - 1];
   const o = latest.open, h = latest.high, l = latest.low, c = latest.close, v = latest.volume;
   const pctChg = o ? (((c - o) / o) * 100).toFixed(2) : '0.00';
-  const isUp = c >= o;
 
   const container = document.getElementById('dMetrics');
   if (!container) return;
 
-  const html = `
+  const metricsHtml = `
     <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; font-size:11px;">
       <div style="background:var(--panel-2); padding:10px; border-radius:6px; text-align:center;">
         <div style="color:var(--muted); margin-bottom:4px;">Open</div>
@@ -3025,34 +3032,61 @@ async function renderOHLCVChart(ticker) {
       </div>
     </div>
     <div style="text-align:center; margin-top:8px; font-size:10px; color:var(--muted); font-family:var(--font-mono);">
-      ${pctChg}% · Last: ${latest.date}
+      ${pctChg}% · Last: ${latest.date} · ${history.length} bars
     </div>
   `;
 
   container.insertAdjacentHTML('beforebegin',
     `<div id="ohlcvBlock" class="card" style="margin-bottom:16px;">
-       <h3>OHLCV (30d)</h3>
-       <canvas id="chartOHLCV" height="120"></canvas>
-       ${html}
+       <h3>Price chart <small>${ticker} · full history</small></h3>
+       <div id="ohlcvChartHost" style="width:100%; height:420px;"></div>
+       ${metricsHtml}
      </div>`);
 
-  // Canvas now exists — safe to build the chart
-  mkChart('chartOHLCV', 'line', {
-    labels: history.map(p => p.date),
-    datasets: [{
-      label: 'Close',
-      data: history.map(p => p.close),
-      borderColor: isUp ? cssVar('--up') : cssVar('--down'),
-      backgroundColor: isUp ? 'rgba(47,212,180,0.1)' : 'rgba(242,104,92,0.1)',
-      borderWidth: 2,
-      fill: true,
-      pointRadius: 0,
-      tension: 0.3,
-    }],
-  }, {
-    plugins: { legend: { display: false } },
-    scales: { y: { title: { display: true, text: 'Price (₹)' } }, x: { ticks: { maxTicksLimit: 8 } } }
+  const host = document.getElementById('ohlcvChartHost');
+  const upColor = cssVar('--up') || '#2FD4B4';
+  const downColor = cssVar('--down') || '#F2685C';
+  const textColor = cssVar('--muted') || '#8A93A1';
+  const gridColor = cssVar('--border') || '#242A32';
+
+  const chart = LightweightCharts.createChart(host, {
+    width: host.clientWidth,
+    height: 420,
+    layout: { background: { color: 'transparent' }, textColor },
+    grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+    rightPriceScale: { borderColor: gridColor, scaleMargins: { top: 0.1, bottom: 0.3 } },
+    timeScale: { borderColor: gridColor, timeVisible: false },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
   });
+
+  const candleSeries = chart.addCandlestickSeries({
+    upColor, downColor, borderUpColor: upColor, borderDownColor: downColor,
+    wickUpColor: upColor, wickDownColor: downColor,
+  });
+  candleSeries.setData(history.map(p => ({ time: p.date, open: p.open, high: p.high, low: p.low, close: p.close })));
+
+  const volSeries = chart.addHistogramSeries({
+    priceFormat: { type: 'volume' },
+    priceScaleId: 'vol',
+  });
+  chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+  volSeries.setData(history.map(p => ({
+    time: p.date, value: p.volume ?? 0,
+    color: p.close >= p.open ? 'rgba(47,212,180,0.5)' : 'rgba(242,104,92,0.5)',
+  })));
+
+  chart.timeScale().fitContent();
+
+  OHLCV_CHART = chart;
+  OHLCV_CANDLE_SERIES = candleSeries;
+  OHLCV_VOL_SERIES = volSeries;
+
+  const resizeObs = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      chart.applyOptions({ width: entry.contentRect.width });
+    }
+  });
+  resizeObs.observe(host);
 }
 
 /* ============================================================
