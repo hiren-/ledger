@@ -61,9 +61,6 @@
   .empty-state p{color:var(--muted); max-width:560px; margin:0 auto 26px; line-height:1.6;}
   .empty-state code{background:var(--panel-2); padding:2px 6px; border-radius:4px; font-family:var(--font-mono);}
 
-  /* ============================================================
-     TABS — sticky bar on desktop, drawer on mobile
-  ============================================================ */
   .tabs-wrap{
     position:sticky;
     top:var(--topbar-h);
@@ -114,7 +111,6 @@
     vertical-align:middle;
   }
 
-  /* Hamburger button — hidden on desktop */
   .tabs-hamburger{
     display:none;
     width:100%;
@@ -158,7 +154,6 @@
     text-overflow:ellipsis;
     max-width:50%;
   }
-  /* Animated X when open */
   .tabs-wrap.open .tabs-hamburger .hb-icon span:nth-child(1){
     transform:translateY(7px) rotate(45deg);
   }
@@ -167,9 +162,6 @@
     transform:translateY(-7px) rotate(-45deg);
   }
 
-  /* ============================================================
-     MOBILE: collapse tabs into a drawer
-  ============================================================ */
   @media(max-width:900px){
     .tabs-hamburger{display:flex;}
 
@@ -438,6 +430,286 @@
   .radar-shape .rs-desc{ font-size:12px; color:var(--muted); line-height:1.6; }
   .radar-shape .rs-desc b{ color:var(--text); }
 
+  /* ============================================================
+     TODAY TAB — quick entry decisions (UPGRADED)
+  ============================================================ */
+  .regime-banner{
+    padding:16px 22px;
+    border-radius:12px;
+    margin-bottom:24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    border:1px solid var(--border);
+    background:var(--panel);
+    flex-wrap:wrap;
+  }
+  .regime-banner.bull{ border-color:var(--teal); background:color-mix(in srgb, var(--teal) 10%, var(--panel)); }
+  .regime-banner.chop{ border-color:var(--amber); background:color-mix(in srgb, var(--amber) 10%, var(--panel)); }
+  .regime-banner.def{ border-color:var(--coral); background:color-mix(in srgb, var(--coral) 10%, var(--panel)); }
+
+  .regime-banner .rb-label{
+    font-family:var(--font-display);
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--text);
+  }
+  .regime-banner .rb-sub{
+    font-family:var(--font-body);
+    font-size:12.5px;
+    color:var(--muted);
+    margin-top:4px;
+    line-height:1.5;
+    max-width:560px;
+  }
+
+  .rb-stats{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .rb-stat{ text-align:right; }
+  .rb-stat-v{
+    font-family:var(--font-display);
+    font-size:20px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .rb-stat-v.up{ color:var(--up); }
+  .rb-stat-v.down{ color:var(--down); }
+  .rb-stat-l{
+    font-size:10.5px;
+    color:var(--muted);
+    font-family:var(--font-mono);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-top:2px;
+  }
+
+  .today-section{ margin-bottom:34px; }
+  .today-section-title{
+    font-family:var(--font-display);
+    font-size:16px;
+    font-weight:600;
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--text);
+    flex-wrap:wrap;
+  }
+  .today-section-badge{
+    display:inline-block;
+    padding:5px 13px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    font-family:var(--font-body);
+  }
+  .today-section-badge.buy{ background:color-mix(in srgb, var(--up) 18%, transparent); color:var(--up); }
+  .today-section-badge.wait{ background:color-mix(in srgb, var(--amber) 18%, transparent); color:var(--amber); }
+  .today-section-badge.avoid{ background:color-mix(in srgb, var(--down) 18%, transparent); color:var(--down); }
+  .today-section-title small{
+    font-family:var(--font-mono);
+    font-weight:400;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .today-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(380px,1fr));
+    gap:14px;
+  }
+
+  .today-card{
+    border:1px solid var(--border);
+    border-left:3px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    background:var(--panel);
+    cursor:pointer;
+    transition:border-color .15s, transform .12s;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .today-card:hover{ border-color:var(--teal); transform:translateY(-2px); }
+  .today-card.buy { border-left-color:var(--up); }
+  .today-card.wait{ border-left-color:var(--amber); }
+  .today-card.avoid{ border-left-color:var(--down); }
+
+  .tc-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .tc-name{ font-family:var(--font-display); font-size:16px; font-weight:600; letter-spacing:-0.01em; }
+  .tc-sym{ font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-top:3px; }
+  .tc-verdict{
+    font-family:var(--font-display);
+    font-size:11px;
+    font-weight:700;
+    padding:5px 12px;
+    border-radius:20px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    flex:0 0 auto;
+  }
+  .tc-verdict.buy{ background:var(--up); color:#04120F; }
+  .tc-verdict.wait{ background:color-mix(in srgb, var(--amber) 22%, transparent); color:var(--amber); }
+  .tc-verdict.avoid{ background:color-mix(in srgb, var(--down) 22%, transparent); color:var(--down); }
+
+  /* NEW: conviction header block */
+  .tc-conviction-block {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    background:var(--panel-2);
+    border-radius:8px;
+  }
+  .tc-conviction-val {
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:700;
+    line-height:1;
+    letter-spacing:-0.02em;
+    min-width:52px;
+  }
+  .tc-conviction-val.high { color: var(--teal); }
+  .tc-conviction-val.mid  { color: var(--amber); }
+  .tc-conviction-val.low  { color: var(--coral); }
+  .tc-conviction-meta { flex:1; min-width:0; }
+  .tc-conviction-meta .cm-label {
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .tc-conviction-meta .cm-desc {
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--text);
+    margin-top:2px;
+  }
+  .tc-pillars {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:5px;
+    margin-top:8px;
+  }
+  .tc-pillar {
+    text-align:center;
+    padding:5px 3px;
+    border-radius:5px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    font-family:var(--font-body);
+    font-size:9px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+  }
+  .tc-pillar .pv {
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    margin-top:2px;
+    display:block;
+  }
+  .tc-pillar.ok { border-color:color-mix(in srgb, var(--up) 40%, transparent); }
+  .tc-pillar.ok .pv { color:var(--up); }
+  .tc-pillar.mid { border-color:color-mix(in srgb, var(--amber) 40%, transparent); }
+  .tc-pillar.mid .pv { color:var(--amber); }
+  .tc-pillar.bad { border-color:color-mix(in srgb, var(--down) 40%, transparent); }
+  .tc-pillar.bad .pv { color:var(--down); }
+
+  .tc-checks{ display:flex; flex-wrap:wrap; gap:14px; font-family:var(--font-mono); font-size:12px; }
+  .tc-check{ color:var(--muted); }
+  .tc-check.ok { color:var(--up); }
+  .tc-check.bad{ color:var(--down); }
+
+  .tc-levels{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+    background:var(--panel-2);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .tc-level .lbl{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    margin-bottom:3px;
+    font-family:var(--font-body);
+  }
+  .tc-level .val{
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .tc-level .val.down{ color:var(--down); }
+  .tc-level .val.up{ color:var(--up); }
+
+  .tc-trigger{
+    padding:10px 12px;
+    border-radius:8px;
+    background:color-mix(in srgb, var(--amber) 12%, var(--panel-2));
+    border-left:2px solid var(--amber);
+    font-size:12.5px;
+    font-family:var(--font-mono);
+    color:var(--text);
+  }
+
+  .tc-flags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tc-flag{
+    font-size:10.5px;
+    font-family:var(--font-body);
+    padding:3px 9px;
+    border-radius:12px;
+    background:color-mix(in srgb, var(--down) 15%, transparent);
+    color:var(--down);
+    white-space:nowrap;
+  }
+
+  .tc-foot{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--muted);
+    border-top:1px solid var(--border);
+    padding-top:10px;
+    flex-wrap:wrap;
+  }
+  .tc-fresh{ font-family:var(--font-mono); font-size:11px; }
+  .tc-fresh.fresh{ color:var(--teal); }
+  .tc-fresh.squeeze{ color:var(--violet); }
+  .tc-fresh.extended{ color:var(--amber); }
+  .tc-fresh.quiet{ color:var(--muted); }
+  .tc-fresh.weak{ color:var(--coral); }
+  .tc-rs{ font-family:var(--font-mono); font-size:11px; }
+  .tc-rs.pos{ color:var(--teal); }
+  .tc-rs.neg{ color:var(--coral); }
+
+  .today-empty{
+    padding:40px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    border:1px dashed var(--border);
+    border-radius:12px;
+    background:var(--panel);
+    line-height:1.6;
+  }
+
   footer{text-align:center; color:var(--faint); font-size:11.5px; padding:30px 0 10px; font-family:var(--font-mono);}
   .hidden{display:none !important;}
   canvas{max-width:100%;}
@@ -450,7 +722,7 @@
 <div class="topbar">
   <div class="brand">
     <div class="mark">ledger<span>.</span>pro</div>
-    <div class="tag">12 archetypes · radar scan · forensic screens · full glossary</div>
+    <div class="tag">Today · radar scan · forensic screens · full glossary</div>
   </div>
   <div class="topbar-actions">
     <button class="btn hidden" id="reloadBtn">Reload data</button>
@@ -467,15 +739,15 @@
 
   <div id="appRoot" class="hidden">
 
-    <!-- ============ STICKY TABS + MOBILE HAMBURGER ============ -->
     <div class="tabs-wrap" id="tabsWrap">
       <button class="tabs-hamburger" id="tabsToggle" aria-expanded="false" aria-controls="tabs">
         <span class="hb-icon"><span></span><span></span><span></span></span>
         <span>Menu</span>
-        <span class="hb-current" id="tabsCurrent">Overview</span>
+        <span class="hb-current" id="tabsCurrent">Today</span>
       </button>
       <div class="tabs" id="tabs">
-        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn active" data-tab="today">Today</button>
+        <button class="tab-btn" data-tab="overview">Overview</button>
         <button class="tab-btn" data-tab="fundamentals">Fundamentals</button>
         <button class="tab-btn" data-tab="technicals">Technicals</button>
         <button class="tab-btn" data-tab="risk">Risk &amp; Quality</button>
@@ -488,8 +760,43 @@
       </div>
     </div>
 
+    <!-- ================= TODAY ================= -->
+    <div class="tab-panel active" id="tab-today">
+      <div class="help-panel">
+        <div class="hp-title"><span class="help-icon big">?</span> Today — conviction-scored entry decisions</div>
+        The Today tab now uses a <b>two-stage conviction engine</b>: first it checks the market &amp; sector regime, then it scores every stock on <b>five pillars</b> — Trend, Momentum (incl. relative strength vs the universe), Volume, Volatility setup, and Fundamentals. The result is a single <b>0–100 conviction score</b>. <b>BUY</b> requires a bullish regime + conviction ≥ 75 + zero red flags. <b>WAIT</b> means a good setup that needs a specific trigger. <b>AVOID</b> means two or more red flags, or conviction below 40. Entry, Stop, Target, and R:R are shown in rupees on every card.
+      </div>
+
+      <div class="regime-banner" id="regimeBanner"></div>
+
+      <div class="today-section">
+        <h2 class="today-section-title">
+          <span class="today-section-badge buy">BUY NOW</span>
+          <small id="buyNowCount">—</small>
+        </h2>
+        <div class="today-grid" id="buyNowGrid"></div>
+      </div>
+
+      <div class="today-section">
+        <h2 class="today-section-title">
+          <span class="today-section-badge wait">WAIT — set trigger alerts</span>
+          <small id="waitCount">—</small>
+        </h2>
+        <div class="today-grid" id="waitGrid"></div>
+      </div>
+
+      <div class="today-section">
+        <h2 class="today-section-title">
+          <span class="today-section-badge avoid">AVOID — red flags</span>
+          <small id="avoidCount">—</small>
+          <button class="btn" id="toggleAvoid" type="button">Show</button>
+        </h2>
+        <div class="today-grid hidden" id="avoidGrid"></div>
+      </div>
+    </div>
+
     <!-- ================= OVERVIEW ================= -->
-    <div class="tab-panel active" id="tab-overview">
+    <div class="tab-panel" id="tab-overview">
       <div class="help-panel">
         <div class="hp-title"><span class="help-icon big">?</span> How to read the Overview</div>
         These KPIs describe the <b>whole filtered universe</b>. Use them to gauge whether the market is expensive, healthy, or stressed. The charts split the universe by score, sector, technical rating, bankruptcy risk, size, and signal frequency. Every row in every table is clickable — it jumps to the Symbol Search detail card.
@@ -589,7 +896,7 @@
     <div class="tab-panel" id="tab-radar">
       <div class="help-panel">
         <div class="hp-title"><span class="help-icon big">?</span> Composite Score Radar — scan by shape</div>
-        Every stock is scored across <b>five axes</b>: Valuation (cheapness), Quality (returns and margins), Growth (revenue and earnings trajectory), Financial Health (leverage and balance sheet), and Momentum (price action and technical ratings). The radar on the detail card draws these five as a pentagon — <b>the shape is the signature</b>. This tab lets you search for a specific shape. Pick a preset (e.g. "Quality-First"), or set your own minimums on each axis, and the table below lists every stock that matches — including the raw axis scores so you can see exactly what is driving each candidate. See the <b>Help &amp; Glossary</b> tab for a walkthrough of the 5 common radar shapes.
+        Every stock is scored across <b>five axes</b>: Valuation, Quality, Growth, Financial Health, and Momentum. The radar on the detail card draws these five as a pentagon — <b>the shape is the signature</b>. This tab lets you search for a specific shape.
       </div>
 
       <div class="card" style="margin-bottom:16px;">
@@ -600,14 +907,14 @@
       <div class="card" style="margin-bottom:16px;">
         <h3>Custom minimum thresholds <small>0 = ignore, 100 = maximum</small></h3>
         <div class="filters">
-          <label><span class="label-row">Min Valuation <span class="help-icon" title="Cheapness score 0–100. Higher = cheaper on P/E, P/B, P/S, EV/EBITDA, P/FCF, earnings yield, FCF yield, dividend yield.">?</span></span><input type="number" id="rVal" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Min Quality <span class="help-icon" title="Returns and margins score 0–100. Built from ROE, ROIC, ROA, gross/operating/net margins, cash conversion, Piotroski.">?</span></span><input type="number" id="rQual" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Min Growth <span class="help-icon" title="Trajectory score 0–100. Built from revenue, net income, EBITDA, gross profit, FCF, EPS growth YoY.">?</span></span><input type="number" id="rGrow" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Min Fin. Health <span class="help-icon" title="Balance-sheet score 0–100. Built from debt/assets, net debt/EBITDA, current ratio, quick ratio, interest coverage, Altman Z.">?</span></span><input type="number" id="rFin" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Min Momentum <span class="help-icon" title="Price action score 0–100. Built from 1M/3M/6M/1Y performance and the aggregated technical rating.">?</span></span><input type="number" id="rMom" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Min Overall <span class="help-icon" title="Weighted composite: Quality 30%, Valuation 20%, Growth 20%, Fin Health 15%, Momentum 15%.">?</span></span><input type="number" id="rOverall" value="0" min="0" max="100"></label>
-          <label><span class="label-row">Max P/E <span class="help-icon" title="Optional valuation cap. Set to 0 to disable.">?</span></span><input type="number" id="rMaxPe" value="0"></label>
-          <label><span class="label-row">Sector <span class="help-icon" title="Restrict results to a specific sector.">?</span></span>
+          <label><span class="label-row">Min Valuation <span class="help-icon" title="Cheapness score 0–100.">?</span></span><input type="number" id="rVal" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Min Quality <span class="help-icon" title="Returns and margins score 0–100.">?</span></span><input type="number" id="rQual" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Min Growth <span class="help-icon" title="Trajectory score 0–100.">?</span></span><input type="number" id="rGrow" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Min Fin. Health <span class="help-icon" title="Balance-sheet score 0–100.">?</span></span><input type="number" id="rFin" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Min Momentum <span class="help-icon" title="Price action score 0–100.">?</span></span><input type="number" id="rMom" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Min Overall <span class="help-icon" title="Weighted composite.">?</span></span><input type="number" id="rOverall" value="0" min="0" max="100"></label>
+          <label><span class="label-row">Max P/E <span class="help-icon" title="Optional valuation cap. 0 disables.">?</span></span><input type="number" id="rMaxPe" value="0"></label>
+          <label><span class="label-row">Sector <span class="help-icon" title="Restrict to a sector.">?</span></span>
             <select id="rSector"><option value="">All sectors</option></select>
           </label>
           <button class="btn primary" id="applyRadar" style="align-self:flex-end;">Scan</button>
@@ -627,7 +934,7 @@
     <div class="tab-panel" id="tab-search">
       <div class="help-panel">
         <div class="hp-title"><span class="help-icon big">?</span> Symbol Search</div>
-        Search any ticker or company name. The detail card shows 52-week range position, Piotroski breakdown, composite radar, risk model readings, and the technical state. Click anywhere in any table to jump here.
+        Search any ticker or company name. The detail card shows 52-week range position, Piotroski breakdown, composite radar, risk model readings, and the technical state. The price chart now overlays <b>SMA 50</b> and <b>SMA 200</b>, and hovering anywhere on it shows OHLC, volume, and both moving averages. Click anywhere in any table to jump here.
       </div>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by symbol or company name — e.g. TCS, Reliance, Infosys…" autocomplete="off">
@@ -651,8 +958,7 @@
             <canvas id="chartRadar" height="240"></canvas>
             <div style="font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.6;">
               The five axes are <b>Valuation</b>, <b>Quality</b>, <b>Growth</b>, <b>Fin. Health</b>, and <b>Momentum</b> — all 0–100.
-              A balanced pentagon means no single factor dominates; a skewed one shows what the stock is betting on.
-              See <b>Help &amp; Glossary → How to read the radar</b> for the five common shapes.
+              A balanced pentagon means no single factor dominates.
             </div>
           </div>
           <div class="card">
@@ -684,11 +990,11 @@
       <div class="card" style="margin-bottom:18px;">
         <h3>Screen parameters <small>hover the "?" for each definition</small></h3>
         <div class="filters">
-          <label><span class="label-row">Min Overall Score <span class="help-icon" title="Composite 0–100 score across Valuation, Quality, Growth, Financial Health and Momentum.">?</span></span><input type="number" id="fMinOverall" value="65"></label>
-          <label><span class="label-row">Min Piotroski <span class="help-icon" title="Strict accounting quality score, 0–9. Standard bar is 7.">?</span></span><input type="number" id="fMinPiotroski" value="7" min="0" max="9"></label>
-          <label><span class="label-row">Min ROE % <span class="help-icon" title="Return on Equity in percent. 15% is the traditional quality threshold.">?</span></span><input type="number" id="fMinRoe" value="15"></label>
+          <label><span class="label-row">Min Overall Score <span class="help-icon" title="Composite 0–100 score.">?</span></span><input type="number" id="fMinOverall" value="65"></label>
+          <label><span class="label-row">Min Piotroski <span class="help-icon" title="Strict accounting quality score, 0–9.">?</span></span><input type="number" id="fMinPiotroski" value="7" min="0" max="9"></label>
+          <label><span class="label-row">Min ROE % <span class="help-icon" title="Return on Equity in percent.">?</span></span><input type="number" id="fMinRoe" value="15"></label>
           <label><span class="label-row">Max D/E <span class="help-icon" title="Debt-to-Equity. Lower = safer.">?</span></span><input type="number" id="fMaxDe" value="1" step="0.1"></label>
-          <label><span class="label-row">Max P/E <span class="help-icon" title="Price-to-Earnings multiple. Higher = more expensive.">?</span></span><input type="number" id="fMaxPe" value="45"></label>
+          <label><span class="label-row">Max P/E <span class="help-icon" title="Price-to-Earnings multiple.">?</span></span><input type="number" id="fMaxPe" value="45"></label>
           <label><span class="label-row">RSI floor <span class="help-icon" title="Lower bound of RSI. 0 disables.">?</span></span><input type="number" id="fRsiLo" value="0"></label>
           <label><span class="label-row">RSI ceiling <span class="help-icon" title="Upper bound of RSI. 100 disables.">?</span></span><input type="number" id="fRsiHi" value="100"></label>
           <label><span class="label-row">Altman zone <span class="help-icon" title="Bankruptcy risk filter.">?</span></span>
@@ -708,7 +1014,7 @@
     <div class="tab-panel" id="tab-gems">
       <div class="help-panel">
         <div class="hp-title"><span class="help-icon big">?</span> Hidden Gems — 12 archetypes of asymmetry</div>
-        The Suggestions tab finds stocks <b>the whole market already knows are good</b>. Hidden Gems searches for <b>asymmetry</b>: real quality that consensus screens don't measure, an inflection in the numbers that hasn't been priced, a technical setup <i>before</i> the crowd rotates in, or a forensic profile that avoids the traps. <b>A stock can appear in multiple archetypes</b>, and the strongest divergences float to the top of each list. Full descriptions of each archetype are in the <b>Help &amp; Glossary</b> tab.
+        The Suggestions tab finds stocks <b>the whole market already knows are good</b>. Hidden Gems searches for <b>asymmetry</b>: real quality that consensus screens don't measure, an inflection in the numbers that hasn't been priced, a technical setup <i>before</i> the crowd rotates in, or a forensic profile that avoids the traps. <b>A stock can appear in multiple archetypes</b>.
       </div>
 
       <div class="archetype-grid" id="archetypeGrid"></div>
@@ -717,12 +1023,12 @@
         <h3 id="archetypeTitle">Gem filters</h3>
         <div class="help-panel" id="archetypeHelp" style="margin-top:6px; margin-bottom:14px;"></div>
         <div class="filters">
-          <label><span class="label-row">Min Piotroski floor <span class="help-icon" title="Safety floor. Gem logic should never surface broken books. Set to 3 to allow early-turnaround names.">?</span></span><input type="number" id="gMinPiotroski" value="4" min="0" max="9"></label>
-          <label><span class="label-row">Max Market Cap (₹ Cr) <span class="help-icon" title="Above this, the market has already priced the story. Default 25,000 Cr = upper mid-cap limit.">?</span></span><input type="number" id="gMaxCapCr" value="25000"></label>
-          <label><span class="label-row">Min Market Cap (₹ Cr) <span class="help-icon" title="Below this, liquidity becomes a real risk. Default 500 Cr.">?</span></span><input type="number" id="gMinCapCr" value="500"></label>
-          <label><span class="label-row">Max Beta <span class="help-icon" title="1.0 = market. Cap at 1.4 to avoid leveraged theme bets.">?</span></span><input type="number" id="gMaxBeta" value="1.4" step="0.1"></label>
-          <label><span class="label-row">Max D/E <span class="help-icon" title="Gems shouldn't carry excess leverage. 1.2 is a reasonable ceiling.">?</span></span><input type="number" id="gMaxDe" value="1.2" step="0.1"></label>
-          <label><span class="label-row">Altman floor <span class="help-icon" title="'Not Distress' keeps Z > 1.1. 'Safe only' keeps Z > 2.6.">?</span></span>
+          <label><span class="label-row">Min Piotroski floor <span class="help-icon" title="Safety floor.">?</span></span><input type="number" id="gMinPiotroski" value="4" min="0" max="9"></label>
+          <label><span class="label-row">Max Market Cap (₹ Cr) <span class="help-icon" title="Upper mid-cap limit.">?</span></span><input type="number" id="gMaxCapCr" value="25000"></label>
+          <label><span class="label-row">Min Market Cap (₹ Cr) <span class="help-icon" title="Liquidity floor.">?</span></span><input type="number" id="gMinCapCr" value="500"></label>
+          <label><span class="label-row">Max Beta <span class="help-icon" title="Cap at 1.4 to avoid leveraged theme bets.">?</span></span><input type="number" id="gMaxBeta" value="1.4" step="0.1"></label>
+          <label><span class="label-row">Max D/E <span class="help-icon" title="1.2 is a reasonable ceiling.">?</span></span><input type="number" id="gMaxDe" value="1.2" step="0.1"></label>
+          <label><span class="label-row">Altman floor <span class="help-icon" title="Not Distress keeps Z > 1.1.">?</span></span>
             <select id="gAltman"><option value="notdistress" selected>Not Distress</option><option value="safe">Safe only</option><option value="any">Any</option></select>
           </label>
           <button class="btn primary" id="applyGems" style="align-self:flex-end;">Run gem scan</button>
@@ -740,11 +1046,12 @@
       <div class="help-doc">
 
         <h1>Help &amp; Glossary</h1>
-        <p class="help-lede">Every term, score, model, and archetype used in this app — explained in plain English with what "good" and "bad" look like, and how to actually read the numbers you're seeing.</p>
+        <p class="help-lede">Every term, score, model, and archetype used in this app — explained in plain English with what "good" and "bad" look like.</p>
 
         <div class="help-toc">
           <h3>Contents</h3>
           <ol>
+            <li><a href="#help-today">The Today tab (start here)</a></li>
             <li><a href="#help-start">Getting started</a></li>
             <li><a href="#help-radar">How to read the Composite Score Radar</a></li>
             <li><a href="#help-composite">The 5 Composite Scores + Overall</a></li>
@@ -760,588 +1067,382 @@
           </ol>
         </div>
 
+        <section class="help-section" id="help-today">
+          <h2>The Today tab — conviction-scored entry decisions</h2>
+          <p class="lead">The Today tab now uses a two-stage model: (1) check the market and sector regime, and (2) score each stock on five pillars. Only stocks passing both a bullish regime and a high conviction score get a <b>BUY</b> verdict.</p>
+
+          <h3>The market regime banner</h3>
+          <p>One banner tells you the health of the market as a whole.</p>
+          <ul>
+            <li><b>Confirmed Uptrend</b> — most stocks above their 50-DMA, new highs outnumber new lows. Normal position sizes.</li>
+            <li><b>Mild Uptrend</b> — broadly constructive. Standard discipline.</li>
+            <li><b>Choppy</b> — no clear direction. Reduce size, tighten stops.</li>
+            <li><b>Defensive</b> — most stocks below 50-DMA. Avoid new entries unless exceptional.</li>
+          </ul>
+
+          <h3>The five pillars (0–100 conviction score)</h3>
+          <div class="def">
+            <div class="def-term">Trend <span class="tag">25 pts max</span></div>
+            <div class="def-body">Price above SMA50 and SMA200, plus the two Golden Crosses (20/50 and 50/200). Full alignment gets the maximum.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">Momentum <span class="tag">25 pts max</span></div>
+            <div class="def-body">Relative strength vs the universe (3M and 6M), RSI in the 45–68 sweet spot, and a bullish MACD cross. This is where modern alpha lives.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">Volume <span class="tag">20 pts max</span></div>
+            <div class="def-body">Volume ratio today vs the 30-day average. Above 1.5× is a strong confirmation of institutional interest; 1.1–1.5 is decent.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">Volatility setup <span class="tag">15 pts max</span></div>
+            <div class="def-body">Bollinger Band width in the bottom quintile (a "squeeze" — often precedes a large move) and ADX in the 18–30 developing-trend window.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">Fundamentals <span class="tag">15 pts max</span></div>
+            <div class="def-body">Piotroski F-Score ≥ 7 and Altman Safe zone. A clean floor so you're never buying a technical setup in a broken business.</div>
+          </div>
+
+          <h3>Three verdicts</h3>
+          <div class="def">
+            <div class="def-term">BUY <span class="tag">go now</span></div>
+            <div class="def-body">Bullish market regime, conviction ≥ 75, zero red flags, RSI in 35–72. Enter at market price with the stop and target shown.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">WAIT <span class="tag">set alert</span></div>
+            <div class="def-body">Conviction 55–74, or one specific condition missing. The card shows the exact trigger price or condition to watch.</div>
+          </div>
+          <div class="def">
+            <div class="def-term">AVOID <span class="tag">skip</span></div>
+            <div class="def-body">Two or more red flags, or conviction below 40. Do not buy.</div>
+          </div>
+
+          <h3>Entry, Stop, Target, R:R</h3>
+          <ul>
+            <li><b>Entry</b> — price to buy at.</li>
+            <li><b>Stop</b> — 2× ATR below entry (minimum 5%). Sell here, no exceptions.</li>
+            <li><b>Target</b> — 2× the risk, or 52W high if closer.</li>
+            <li><b>R:R</b> — risk-to-reward. <b>2.0 or higher is healthy.</b> Below 1.5, skip.</li>
+          </ul>
+
+          <h3>Freshness chip</h3>
+          <ul>
+            <li><b>Fresh</b> (green) — early move, entry window open.</li>
+            <li><b>Squeeze</b> (violet) — Bollinger contraction; breakout imminent.</li>
+            <li><b>Extended</b> (amber) — already moved a lot; wait for pullback.</li>
+            <li><b>Quiet</b> (grey) — range-bound, no rush.</li>
+            <li><b>Weak</b> (red) — falling, not actionable.</li>
+          </ul>
+
+          <div class="callout good">
+            <b>How to use this tab:</b> Check the regime banner. If Defensive, close the tab. If bullish, scan the BUY list, pick one you like, check the conviction score and R:R. If R:R ≥ 2, place limit + stop + target orders. Done. Don't check the price for a week.
+          </div>
+
+          <div class="callout warn">
+            <b>What the Today tab does NOT do:</b> predict the future. It doesn't know about earnings, news, or analyst changes. It tells you whether the setup is technically and fundamentally clean enough to enter right now.
+          </div>
+        </section>
+
         <section class="help-section" id="help-start">
           <h2>Getting started</h2>
-          <p class="lead">This tool scans an Indian equity universe (NSE + BSE, deduplicated, NSE preferred) and surfaces four kinds of insight:</p>
           <ul>
-            <li><b>Overview &amp; category tabs</b> — descriptive statistics of the whole universe and sortable tables by category.</li>
-            <li><b>Sector View</b> — within-sector comparison, because valuation and margin norms vary wildly between industries.</li>
-            <li><b>Radar Scan</b> — search by the five-factor composite shape.</li>
-            <li><b>Suggestions &amp; Hidden Gems</b> — consensus screens and asymmetry screens respectively.</li>
+            <li><b>Today</b> — fastest path to a decision.</li>
+            <li><b>Overview &amp; category tabs</b> — descriptive statistics and sortable tables.</li>
+            <li><b>Sector View</b> — within-sector comparison.</li>
+            <li><b>Radar Scan</b> — search by five-factor composite shape.</li>
+            <li><b>Suggestions &amp; Hidden Gems</b> — consensus and asymmetry screens.</li>
           </ul>
-          <p>Anywhere a table shows a row, <b>click the row</b> to open that stock's full detail card on the Symbol Search tab.</p>
+          <p>Click any row in any table to open that stock's full detail card on the Symbol Search tab.</p>
         </section>
 
         <section class="help-section" id="help-radar">
           <h2>How to read the Composite Score Radar</h2>
-          <p class="lead">The radar on the detail card plots <b>five 0–100 scores</b> as a pentagon. Each axis is a <b>percentile-style composite</b> built from a specific set of underlying metrics — not a single number. The <b>shape</b> of the pentagon is what matters, not the exact axis values.</p>
-
-          <h3>The five axes</h3>
+          <p class="lead">The radar plots <b>five 0–100 scores</b> as a pentagon. The <b>shape</b> is what matters.</p>
           <table>
             <thead><tr><th>Axis</th><th>What it measures</th><th>Built from</th></tr></thead>
             <tbody>
-              <tr><td><b>Valuation</b></td><td>How cheap the stock is relative to its earnings, book, sales, cash flow, and dividend.</td><td>P/E, P/B, P/S, EV/EBITDA, P/FCF, earnings yield, FCF yield, dividend yield</td></tr>
-              <tr><td><b>Quality</b></td><td>Returns on capital and margin structure — how good the business is.</td><td>ROE, ROIC, ROA, gross/operating/net margins, cash conversion, extended F-score</td></tr>
-              <tr><td><b>Growth</b></td><td>Direction and speed of the business — how fast it's expanding.</td><td>Revenue YoY, net income YoY, EBITDA YoY, gross profit YoY, FCF YoY, EPS YoY</td></tr>
-              <tr><td><b>Fin. Health</b></td><td>Balance-sheet robustness — can it survive a downturn?</td><td>Debt/assets, net debt/EBITDA, current ratio, quick ratio, interest coverage, Altman Z</td></tr>
-              <tr><td><b>Momentum</b></td><td>Price action and technical opinion — is the market starting to notice?</td><td>1M/3M/6M/1Y performance, aggregated technical rating</td></tr>
+              <tr><td><b>Valuation</b></td><td>Cheapness</td><td>P/E, P/B, P/S, EV/EBITDA, P/FCF, yields</td></tr>
+              <tr><td><b>Quality</b></td><td>Returns &amp; margins</td><td>ROE, ROIC, ROA, margins, cash conversion</td></tr>
+              <tr><td><b>Growth</b></td><td>Direction &amp; speed</td><td>Revenue, NI, EBITDA, GP, FCF, EPS YoY</td></tr>
+              <tr><td><b>Fin. Health</b></td><td>Balance-sheet robustness</td><td>Debt/assets, net debt/EBITDA, Altman Z, coverage</td></tr>
+              <tr><td><b>Momentum</b></td><td>Price action &amp; opinion</td><td>1M/3M/6M/1Y perf, technical rating</td></tr>
             </tbody>
           </table>
 
           <div class="callout good">
-            <b>Reading rule of thumb:</b> anything on an axis <b>≥ 70</b> is strong; <b>50–70</b> is decent; <b>30–50</b> is weak; <b>&lt; 30</b> is a red flag on that dimension. Values are relative to the scanned universe, so a "50" means the median Indian stock scores 50 on that axis.
+            <b>Rule of thumb:</b> <b>≥ 70</b> strong; <b>50–70</b> decent; <b>30–50</b> weak; <b>&lt; 30</b> red flag.
           </div>
 
           <h3>The five common radar shapes</h3>
-          <p>In practice, most stocks cluster into one of five recognisable pentagon shapes. Recognising the shape is faster than reading the five numbers individually.</p>
-
           <div class="radar-shape-grid">
             <div class="radar-shape">
               <div class="rs-title"><span class="pill buy">All-Rounder</span></div>
               <div class="rs-shape">V 65 · Q 75 · G 65 · F 70 · M 60</div>
-              <div class="rs-desc">A <b>balanced pentagon</b>. Strong everywhere, no weak axis. This is what most "quality compounders" look like. Easy to hold, rarely cheap. <b>Best for:</b> core positions. <b>Watch for:</b> nothing specific — the risk is just paying too much for a name everyone loves.</div>
+              <div class="rs-desc">Balanced pentagon. Core position material.</div>
             </div>
-
             <div class="radar-shape">
               <div class="rs-title"><span class="pill violet">Growth-Dominant</span></div>
               <div class="rs-shape">V 30 · Q 70 · G 90 · F 60 · M 75</div>
-              <div class="rs-desc">A <b>spike toward Growth and Momentum</b>. Expensive (Valuation often low), but the business is expanding fast and the market has noticed. <b>Best for:</b> momentum and growth mandates. <b>Watch for:</b> any slowdown — this shape de-rates violently.</div>
+              <div class="rs-desc">Spike toward Growth and Momentum. Watch for any slowdown.</div>
             </div>
-
             <div class="radar-shape">
               <div class="rs-title"><span class="pill lime">Deep-Value</span></div>
               <div class="rs-shape">V 90 · Q 45 · G 30 · F 55 · M 25</div>
-              <div class="rs-desc">A <b>spike toward Valuation only</b>. Cheap, but growth is slow, quality is mediocre, and the market has no interest. Classic value trap profile unless something else changes. <b>Best for:</b> contrarian, patience-driven positions. <b>Watch for:</b> the reason it's cheap.</div>
+              <div class="rs-desc">Cheap, but slow and unloved. Watch the "why".</div>
             </div>
-
             <div class="radar-shape">
               <div class="rs-title"><span class="pill amber">Quality-First</span></div>
               <div class="rs-shape">V 55 · Q 90 · G 55 · F 85 · M 40</div>
-              <div class="rs-desc">A <b>spike toward Quality and Financial Health</b>. Excellent business, rock-solid balance sheet, but not growing fast and not in favour. <b>Best for:</b> defensive, cash-flow-driven portfolios. <b>Watch for:</b> quality that's already been fully paid for.</div>
+              <div class="rs-desc">Excellent business, no rush from the market.</div>
             </div>
-
             <div class="radar-shape">
               <div class="rs-title"><span class="pill pink">Asymmetric</span></div>
               <div class="rs-shape">V 75 · Q 70 · G 75 · F 60 · M 30</div>
-              <div class="rs-desc">A <b>cheap-and-good-with-growth shape</b>, but the market hasn't noticed yet (Momentum low). This is the rarest and arguably the most valuable pattern — mispriced quality. <b>Best for:</b> the highest-conviction long ideas. <b>Watch for:</b> Momentum never turning up — sometimes the market is right not to care.</div>
+              <div class="rs-desc">Cheap + good + growing, not yet noticed. The rarest shape.</div>
             </div>
           </div>
-
-          <h3>What a healthy radar looks like</h3>
-          <ul>
-            <li><b>No axis below 30</b> unless you're deliberately running a specialist strategy (e.g. deep value means Valuation will dominate).</li>
-            <li><b>No axis above 90 with a low opposite axis</b> — e.g. Growth 95 with Financial Health 25 usually means over-leveraged hypergrowth.</li>
-            <li><b>Shape should match your holding period</b>: 6–12 month holds favour Momentum + Growth; 3–5 year holds favour Quality + Valuation.</li>
-          </ul>
-
-          <h3>Red flags in radar shapes</h3>
-          <div class="callout bad">
-            <b>V 95 / Q 20 / F 20</b> — cheap and broken. Value trap. The valuation is low because the business is deteriorating.
-          </div>
-          <div class="callout warn">
-            <b>M 95 / V 15 / Q 30</b> — pure price momentum, no fundamentals. Only valid for short-term trades with tight stops.
-          </div>
-          <div class="callout warn">
-            <b>G 95 / F 30</b> — hypergrowth funded by debt. Works until rates rise or growth stalls.
-          </div>
-
-          <p>Use the <b>Radar Scan</b> tab to search for a specific shape across the whole universe. The presets there correspond to the five shapes above plus a few others, and you can set your own thresholds on each axis.</p>
         </section>
 
         <section class="help-section" id="help-composite">
           <h2>The 5 Composite Scores + Overall</h2>
-          <p>Each composite is a <b>0–100 weighted blend</b> of underlying metrics. Scores are capped at 0 and 100. Where a metric is missing, the weight is renormalised across the available metrics — so a stock isn't penalised for a field TradingView doesn't expose.</p>
-
           <div class="def">
             <div class="def-term">Valuation Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              How cheap the stock is across multiple valuation lenses. Higher = cheaper.
-              <ul>
-                <li>P/E vs universe (25% weight)</li>
-                <li>EV/EBITDA (15%)</li>
-                <li>P/B (15%)</li>
-                <li>P/S (10%)</li>
-                <li>P/FCF (10%)</li>
-                <li>Earnings Yield (10%)</li>
-                <li>FCF Yield (10%)</li>
-                <li>Dividend Yield (5%)</li>
-              </ul>
-              <span class="def-good">≥ 70 = genuinely cheap; 50–70 = fair; &lt; 30 = expensive.</span>
-            </div>
+            <div class="def-body">P/E, EV/EBITDA, P/B, P/S, P/FCF, earnings yield, FCF yield, dividend yield. Higher = cheaper.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Quality Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Returns on capital, margin structure, and cash conversion — how good the business is.
-              <ul>
-                <li>ROE (20% weight)</li>
-                <li>ROIC (20%)</li>
-                <li>ROA (15%)</li>
-                <li>Gross margin (10%)</li>
-                <li>Operating margin (10%)</li>
-                <li>Net margin (10%)</li>
-                <li>Cash conversion (10%)</li>
-                <li>Extended F-Score (5%)</li>
-              </ul>
-              <span class="def-good">≥ 70 = high-quality business; &lt; 40 = mediocre economics.</span>
-            </div>
+            <div class="def-body">ROE, ROIC, ROA, margins, cash conversion, extended F-score.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Growth Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Direction and speed of revenue, earnings, and cash flow.
-              <ul>
-                <li>Revenue growth YoY (25%)</li>
-                <li>Net income growth YoY (25%)</li>
-                <li>EPS growth YoY (15%)</li>
-                <li>EBITDA growth YoY (15%)</li>
-                <li>Gross profit growth YoY (10%)</li>
-                <li>FCF growth YoY (10%)</li>
-              </ul>
-              <span class="def-good">≥ 70 = fast grower; 40–70 = steady; &lt; 40 = flat or declining.</span>
-            </div>
+            <div class="def-body">Revenue, NI, EPS, EBITDA, GP, FCF growth YoY.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Financial Health Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Balance-sheet robustness — leverage, liquidity, and bankruptcy risk.
-              <ul>
-                <li>Debt-to-assets (20%)</li>
-                <li>Net debt/EBITDA (20%)</li>
-                <li>Altman Z (20%)</li>
-                <li>Current ratio (15%)</li>
-                <li>Interest coverage (15%)</li>
-                <li>Quick ratio (10%)</li>
-              </ul>
-              <span class="def-good">≥ 70 = fortress balance sheet; &lt; 30 = over-leveraged.</span>
-            </div>
+            <div class="def-body">Debt/assets, net debt/EBITDA, Altman Z, current ratio, interest coverage, quick ratio.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Momentum Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Price action and technical opinion — is the market starting to move?
-              <ul>
-                <li>1M performance (15%)</li>
-                <li>3M performance (20%)</li>
-                <li>6M performance (20%)</li>
-                <li>1Y performance (20%)</li>
-                <li>Aggregated technical rating (25%)</li>
-              </ul>
-              <span class="def-good">≥ 70 = strong trend; &lt; 30 = clearly out of favour.</span>
-            </div>
+            <div class="def-body">1M/3M/6M/1Y performance plus the aggregated technical rating.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Overall Score <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Weighted blend of the five composites: <b>Quality 30% · Valuation 20% · Growth 20% · Financial Health 15% · Momentum 15%</b>. The 30% quality weight reflects the empirical fact that quality is the single most durable factor.
-              <ul>
-                <li>≥ 70 = top of the universe</li>
-                <li>55–70 = above average</li>
-                <li>40–55 = middling</li>
-                <li>&lt; 40 = below par</li>
-              </ul>
-            </div>
+            <div class="def-body">Quality 30% · Valuation 20% · Growth 20% · Fin Health 15% · Momentum 15%.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-piotroski">
           <h2>Piotroski F-Score &amp; Extended F-Score</h2>
-          <p class="lead">The <b>Piotroski F-Score</b> is a 9-point accounting quality check developed by Joseph Piotroski (2000). It measures whether a business is <i>fundamentally improving</i>, not just whether it's profitable today.</p>
-
-          <h4>The 9 tests (each pass = 1 point)</h4>
+          <p class="lead">The <b>Piotroski F-Score</b> is a 9-point accounting quality check developed by Joseph Piotroski (2000).</p>
           <ul>
-            <li><b>Positive net income</b> — the company made money.</li>
-            <li><b>Positive ROA</b> — return on assets is positive.</li>
-            <li><b>Positive operating cash flow</b> — real cash was generated.</li>
-            <li><b>CFO &gt; Net Income</b> — earnings are cash-backed, not accrual-driven.</li>
-            <li><b>Lower long-term debt YoY</b> — leverage is being reduced.</li>
-            <li><b>Higher current ratio YoY</b> — liquidity is improving.</li>
-            <li><b>No new shares issued</b> — no dilution.</li>
-            <li><b>Higher gross margin YoY</b> — pricing power or cost control.</li>
-            <li><b>Higher asset turnover YoY</b> — using assets more efficiently.</li>
+            <li>Positive net income</li>
+            <li>Positive ROA</li>
+            <li>Positive operating cash flow</li>
+            <li>CFO &gt; Net Income</li>
+            <li>Lower long-term debt YoY</li>
+            <li>Higher current ratio YoY</li>
+            <li>No new shares issued</li>
+            <li>Higher gross margin YoY</li>
+            <li>Higher asset turnover YoY</li>
           </ul>
-
-          <div class="callout warn">
-            <b>Caveat in this app:</b> TradingView exposes <i>current-FY</i> balance-sheet data reliably, but not always the prior-year raw line items needed for the change-based tests (5, 6, 7, 8, 9). Where the change can't be measured, we leave it as an explicit <b>None</b> rather than guessing. As a result, the F-Score here is <b>conservative</b> — a 7 is genuinely strong.
-          </div>
-
-          <div class="def">
-            <div class="def-term">Extended F-Score <span class="tag">0–12</span></div>
-            <div class="def-body">
-              A heuristic approximation that uses the available current-period data (current ratio, D/E, gross margin, asset turnover) to estimate the leverage and efficiency points that can't be strictly verified. Directional, not certified. Use it as a sanity check on the strict F-Score.
-            </div>
-          </div>
-
-          <p><b>Reading guide:</b> 8–9 = exceptional; 7 = strong; 5–6 = mixed; 3–4 = weak; 0–2 = serious concern. Only stocks with a strict F-Score ≥ 7 appear in the "Piotroski Pass" list on the Suggestions tab.</p>
+          <p>8–9 exceptional · 7 strong · 5–6 mixed · 3–4 weak · 0–2 concern.</p>
         </section>
 
         <section class="help-section" id="help-returns">
           <h2>Returns: ROE, ROA, ROIC, ROCE, DuPont</h2>
-
           <div class="def">
             <div class="def-term">ROE — Return on Equity <span class="tag">%</span></div>
-            <div class="def-body">Net income / shareholders' equity. How much profit the company makes per rupee of shareholder capital. <span class="def-good">≥ 15% is quality; ≥ 20% is excellent.</span> <span class="def-bad">Below 10% is weak.</span> Watch out: ROE can be inflated by leverage, so always pair it with DuPont decomposition.</div>
+            <div class="def-body">Net income / equity. ≥ 15% quality, ≥ 20% excellent, &lt; 10% weak. Pair with DuPont to check leverage.</div>
           </div>
-
           <div class="def">
             <div class="def-term">ROA — Return on Assets <span class="tag">%</span></div>
-            <div class="def-body">Net income / total assets. Profit per rupee of assets, regardless of funding. <span class="def-good">≥ 8% is strong; ≥ 12% is exceptional.</span> Lower-leverage-adjusted view than ROE.</div>
+            <div class="def-body">Net income / total assets. ≥ 8% strong, ≥ 12% exceptional.</div>
           </div>
-
           <div class="def">
             <div class="def-term">ROIC — Return on Invested Capital <span class="tag">%</span></div>
-            <div class="def-body">After-tax operating profit / (debt + equity − cash). The cleanest measure of how well the company turns invested capital into profit. <span class="def-good">≥ 15% is quality; ≥ 20% is exceptional.</span> If ROIC &gt; WACC consistently, the company creates value; if not, it destroys it.</div>
+            <div class="def-body">After-tax operating profit / (debt + equity − cash). ≥ 15% quality, ≥ 20% exceptional.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">ROCE — Return on Capital Employed <span class="tag">%</span></div>
-            <div class="def-body">EBIT / (total assets − current liabilities). Similar to ROIC but excludes cash treatment. Useful for capital-heavy businesses.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">DuPont Decomposition <span class="tag">3-factor</span></div>
-            <div class="def-body">
-              Splits ROE into three multiplicative pieces: <b>ROE = Net Margin × Asset Turnover × Equity Multiplier</b>.
-              <ul>
-                <li><b>Net Margin</b> — profitability per rupee of sales</li>
-                <li><b>Asset Turnover</b> — sales per rupee of assets</li>
-                <li><b>Equity Multiplier</b> — assets / equity (leverage)</li>
-              </ul>
-              This matters because a 25% ROE from <b>Net Margin 15% × Asset Turnover 1.2 × Leverage 1.4</b> is a fundamentally better business than a 25% ROE from <b>Net Margin 3% × Asset Turnover 0.8 × Leverage 10</b>.
-              <span class="def-good">Quality ROE: leverage &lt; 2.0 with margin &gt; 10%.</span>
-            </div>
+            <div class="def-term">DuPont <span class="tag">3-factor</span></div>
+            <div class="def-body">ROE = Net Margin × Asset Turnover × Equity Multiplier. A 25% ROE from leverage is not a 25% ROE from margins.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-valuation">
           <h2>Valuation: P/E, P/B, P/S, PEG, Forward P/E</h2>
-
           <div class="def">
-            <div class="def-term">P/E — Price-to-Earnings <span class="tag">×</span></div>
-            <div class="def-body">Price / earnings per share. The most-used valuation ratio. <span class="def-good">&lt; 15 = cheap; 15–25 = fair; &gt; 40 = expensive.</span> But context matters — a 30× P/E for a 30% grower can be cheaper than a 15× P/E for a flat business. Always pair with PEG.</div>
+            <div class="def-term">P/E <span class="tag">×</span></div>
+            <div class="def-body">&lt; 15 cheap · 15–25 fair · &gt; 40 expensive. Pair with PEG.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">P/B — Price-to-Book <span class="tag">×</span></div>
-            <div class="def-body">Price / book value per share. Measures how much you pay above accounting net worth. <span class="def-good">&lt; 2 = reasonable for most sectors; &lt; 1 = below book.</span> Less useful for asset-light businesses (IT, pharma) where book value is tiny.</div>
+            <div class="def-term">P/B <span class="tag">×</span></div>
+            <div class="def-body">&lt; 2 reasonable; &lt; 1 below book. Less useful for asset-light.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">P/S — Price-to-Sales <span class="tag">×</span></div>
-            <div class="def-body">Market cap / revenue. Useful when earnings are volatile or negative. <span class="def-good">&lt; 2 = reasonable; &lt; 1 = cheap.</span> Sector-relative only — a 5× P/S is normal for software, abnormal for a distributor.</div>
+            <div class="def-term">P/S <span class="tag">×</span></div>
+            <div class="def-body">&lt; 2 reasonable; &lt; 1 cheap. Sector-relative only.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">PEG — Price/Earnings-to-Growth <span class="tag">×</span></div>
-            <div class="def-body">P/E divided by earnings growth rate. A PEG of 1 means you're paying 1× for 1% growth. <span class="def-good">&lt; 1 = undervalued relative to growth; 1–2 = fair; &gt; 2 = expensive.</span> Only meaningful for growing companies.</div>
+            <div class="def-term">PEG <span class="tag">×</span></div>
+            <div class="def-body">P/E ÷ growth rate. &lt; 1 undervalued; 1–2 fair; &gt; 2 expensive.</div>
           </div>
-
-          <div class="def">
-            <div class="def-term">Forward P/E <span class="tag">×</span></div>
-            <div class="def-body">Price / next-year forecast EPS. If forward P/E &lt; trailing P/E, the market expects earnings to grow. Useful check on whether a high trailing multiple is justified.</div>
-          </div>
-
           <div class="def">
             <div class="def-term">EV/EBITDA <span class="tag">×</span></div>
-            <div class="def-body">Enterprise value / EBITDA. Capital-structure-neutral valuation. <span class="def-good">&lt; 10 = cheap; 10–20 = fair; &gt; 30 = expensive.</span> Better cross-sector comparison than P/E.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">Dividend Yield <span class="tag">%</span></div>
-            <div class="def-body">Annual dividend / price. <span class="def-good">1.5–4% = sustainable yield zone; &gt; 6% = often a warning.</span> A very high yield usually means the price has fallen and the market expects a cut.</div>
+            <div class="def-body">&lt; 10 cheap; 10–20 fair; &gt; 30 expensive. Capital-structure-neutral.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-risk">
           <h2>Risk models: Altman Z, Graham, NCAV</h2>
-
           <div class="def">
             <div class="def-term">Altman Z-Score <span class="tag">Z''</span></div>
-            <div class="def-body">
-              A bankruptcy-risk model originally developed by Edward Altman (1968). The version used here is the <b>Z''</b> variant, adapted for emerging markets and non-manufacturers by removing the sales/assets term (which unfairly penalises asset-light businesses).
-              <br><br>
-              <b>Formula:</b> <code>Z'' = 6.56 × X1 + 3.26 × X2 + 6.72 × X3 + 1.05 × X4</code>
-              <ul>
-                <li>X1 = Working capital / Total assets</li>
-                <li>X2 = Retained earnings / Total assets (proxied by equity/assets)</li>
-                <li>X3 = EBIT / Total assets</li>
-                <li>X4 = Book equity / Total liabilities</li>
-              </ul>
-              <span class="def-good">Z &gt; 2.6 = Safe zone</span> · <span style="color:var(--amber);">1.1–2.6 = Grey zone</span> · <span class="def-bad">Z &lt; 1.1 = Distress zone</span>
-            </div>
+            <div class="def-body"><code>Z'' = 6.56·X1 + 3.26·X2 + 6.72·X3 + 1.05·X4</code>. Z &gt; 2.6 Safe · 1.1–2.6 Grey · &lt; 1.1 Distress.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Graham Number <span class="tag">₹</span></div>
-            <div class="def-body">
-              A rough intrinsic value estimate developed by Benjamin Graham: <code>√(22.5 × EPS × BVPS)</code>. The 22.5 constant comes from a maximum P/E of 15 times a maximum P/B of 1.5.
-              <br><br>
-              <b>Graham Margin of Safety</b> = (Graham Number − Price) / Graham Number. <span class="def-good">MoS &gt; 20% = meaningfully undervalued.</span> <span class="def-bad">Negative MoS = trading above Graham's fair value.</span>
-              <br><br>
-              Only meaningful for profitable, asset-backed businesses — not applicable to asset-light or loss-making companies.
-            </div>
+            <div class="def-body"><code>√(22.5 × EPS × BVPS)</code>. MoS &gt; 20% meaningfully undervalued.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">NCAV — Net Current Asset Value <span class="tag">₹</span></div>
-            <div class="def-body">
-              <code>NCAV = Total current assets − Total liabilities</code>. Graham's "net-net" test: buy only if <b>Price / NCAV &lt; 0.67</b> (buying for two-thirds of liquidation value).
-              <br><br>
-              <span class="def-good">Price / NCAV &lt; 0.67 = deep net-net.</span> <span class="def-good">0.67–1.0 = attractive.</span> <span class="def-bad">&gt; 1.0 = no margin of safety from the balance sheet.</span>
-              <br><br>
-              Rare in modern markets, occasionally found in Indian micro-caps with thin analyst coverage.
-            </div>
+            <div class="def-term">NCAV <span class="tag">₹</span></div>
+            <div class="def-body">Current assets − total liabilities. Buy below 0.67× NCAV for deep value.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Net Debt / EBITDA <span class="tag">×</span></div>
-            <div class="def-body">Net debt divided by EBITDA. How many years of current cash flow it would take to repay net debt. <span class="def-good">&lt; 2× = healthy.</span> <span style="color:var(--amber);">2–4× = stretched.</span> <span class="def-bad">&gt; 4× = high risk.</span> Some sectors (utilities, telecom, infrastructure) run structurally higher — compare within sector.</div>
+            <div class="def-body">&lt; 2 healthy; 2–4 stretched; &gt; 4 high risk.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Interest Coverage <span class="tag">×</span></div>
-            <div class="def-body">EBIT / interest expense. How many times operating profit covers the interest bill. <span class="def-good">&gt; 5× = comfortable.</span> <span style="color:var(--amber);">2–5× = adequate.</span> <span class="def-bad">&lt; 2× = dangerously thin.</span> Below 1× means the company can't pay interest from operating profit.</div>
+            <div class="def-body">&gt; 5 comfortable; 2–5 adequate; &lt; 2 dangerously thin.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-cash">
           <h2>Cash flow &amp; quality: Accruals, Cash Conversion, FCF Yield</h2>
-          <p class="lead">Cash is harder to manipulate than accounting profit. The metrics below are the ones professional forensic analysts look at first — and the ones most retail screens ignore entirely.</p>
-
           <div class="def">
             <div class="def-term">Accruals Ratio <span class="tag">Sloan 1996</span></div>
-            <div class="def-body">
-              <code>(Net income − Cash from operations) / Total assets</code>. Measures how much of reported profit is <i>not</i> backed by cash.
-              <ul>
-                <li><b>Negative accruals</b> = CFO &gt; Net income. Reported profit <i>understates</i> cash generation. Strongly positive signal.</li>
-                <li><b>Near-zero accruals</b> (0–0.02) = clean earnings.</li>
-                <li><b>Positive accruals</b> &gt; 0.05 = earnings are running ahead of cash. Warning.</li>
-                <li><b>&gt; 0.15</b> = serious red flag. Historically one of the strongest predictors of future underperformance.</li>
-              </ul>
-              <span class="def-good">Target: &lt; 0 (negative).</span>
-            </div>
+            <div class="def-body">(NI − CFO) / Total assets. Negative is best (cash-backed). &gt; 0.05 warning; &gt; 0.15 serious.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Cash Conversion <span class="tag">CFO / NI</span></div>
-            <div class="def-body">
-              Operating cash flow divided by net income. <span class="def-good">&gt; 1.0 means every rupee of reported profit is matched by at least a rupee of real cash.</span> <span class="def-bad">&lt; 0.7 means earnings are largely accrual-driven and likely low-quality.</span> Below 1.0 is a yellow flag; below 0.5 is a red flag.
-            </div>
+            <div class="def-body">&gt; 1.0 good; &lt; 0.7 accrual-driven.</div>
           </div>
-
           <div class="def">
             <div class="def-term">FCF Yield <span class="tag">%</span></div>
-            <div class="def-body">Free cash flow / market cap. The inverse of P/FCF. <span class="def-good">&gt; 7% = cheap on cash; &gt; 10% = very cheap.</span> <span class="def-bad">Negative = the business is burning cash.</span> FCF yield &gt; earnings yield is a specific mispricing signal — the market is pricing accounting earnings higher than cash flow.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">CFO Yield <span class="tag">%</span></div>
-            <div class="def-body">Operating cash flow / market cap. A broader cash-generating measure than FCF yield because it ignores capex. Useful when capex is lumpy.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">FCF Margin <span class="tag">%</span></div>
-            <div class="def-body">Free cash flow / revenue. How much of each rupee of sales converts into free cash. <span class="def-good">&gt; 12% = efficient cash conversion; &gt; 20% = exceptional.</span> <span class="def-bad">&lt; 5% = thin.</span></div>
+            <div class="def-body">&gt; 7% cheap; &gt; 10% very cheap.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-technical">
           <h2>Technicals: Ratings, RSI, ADX, MACD, Bands, Crosses</h2>
-
           <div class="def">
             <div class="def-term">TradingView Ratings <span class="tag">-1 to +1</span></div>
-            <div class="def-body">
-              Three aggregated opinions from TradingView:
-              <ul>
-                <li><b>Tech Rating (Recommend.All)</b> — overall, blending moving averages and oscillators</li>
-                <li><b>MA Rating</b> — from the moving-average stack only</li>
-                <li><b>Oscillator Rating</b> — from the oscillator stack only</li>
-              </ul>
-              Each maps to: <b>Strong Buy</b> (≥ 0.5) · <b>Buy</b> (0.1–0.5) · <b>Neutral</b> (−0.1–0.1) · <b>Sell</b> (−0.5–−0.1) · <b>Strong Sell</b> (≤ −0.5).
-              <div class="callout warn" style="margin-top:8px;">When <b>all three</b> read Strong Buy simultaneously, the trade is crowd-crowded. When <b>none</b> do, it's often a hidden-gem window.</div>
-            </div>
+            <div class="def-body">Strong Buy ≥ 0.5 · Buy 0.1–0.5 · Neutral −0.1–0.1 · Sell −0.5–−0.1 · Strong Sell ≤ −0.5.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">RSI — Relative Strength Index <span class="tag">0–100</span></div>
-            <div class="def-body">Momentum oscillator. <span class="def-bad">&gt; 70 = overbought</span> (potential reversal or extension); <span class="def-good">&lt; 30 = oversold</span> (potential bounce). <b>45–65 with an upward slope</b> is the "early uptrend" sweet spot — it's what the Quiet Inflection and Pre-Breakout archetypes look for.</div>
+            <div class="def-term">RSI <span class="tag">0–100</span></div>
+            <div class="def-body">&gt; 70 overbought; &lt; 30 oversold; <b>45–65 with rising slope</b> is the sweet spot.</div>
           </div>
-
           <div class="def">
-            <div class="def-term">ADX — Average Directional Index <span class="tag">0–100</span></div>
-            <div class="def-body">
-              Trend <b>strength</b> (not direction). <span class="def-bad">&lt; 20 = ranging / no trend.</span> <b>20–25 = developing trend</b> (the golden window for early entries). <b>25–40 = established trend.</b> <b>&gt; 40 = very strong trend</b> (often late). The <b>+DI / −DI</b> pair underneath tells you which direction the trend is going.
-            </div>
+            <div class="def-term">ADX <span class="tag">0–100</span></div>
+            <div class="def-body">&lt; 20 ranging; 20–25 developing; 25–40 established; &gt; 40 very strong.</div>
           </div>
-
           <div class="def">
             <div class="def-term">MACD <span class="tag">momentum</span></div>
-            <div class="def-body">Difference between 12-period and 26-period EMAs. A <b>Bullish</b> cross (MACD &gt; signal) above zero is far more meaningful than one below zero — below-zero crosses are often just bear-market bounces.</div>
+            <div class="def-body">12-EMA − 26-EMA. Bullish cross above zero is the meaningful one.</div>
           </div>
-
           <div class="def">
             <div class="def-term">Bollinger Bands <span class="tag">volatility</span></div>
-            <div class="def-body">
-              Upper, lower, and basis (20-period SMA). Two derived metrics:
-              <ul>
-                <li><b>BB Position %</b> — where price sits between lower (0%) and upper (100%). <b>35–75%</b> = inside the band, not stretched.</li>
-                <li><b>BB Width %</b> — band width / basis. When in the <b>bottom 20% of the universe</b>, it signals a volatility squeeze — the pre-breakout window.</li>
-              </ul>
-            </div>
+            <div class="def-body">BB Position %: 35–75 inside band. BB Width % in bottom 20% = squeeze (pre-breakout).</div>
           </div>
-
           <div class="def">
-            <div class="def-term">Golden Cross / Death Cross <span class="tag">trend</span></div>
-            <div class="def-body">
-              <b>Golden Cross</b> = fast MA crosses above slow MA (bullish). Two versions here:
-              <ul>
-                <li><b>GC 20/50</b> — SMA20 &gt; SMA50. Fires early.</li>
-                <li><b>GC 50/200</b> — SMA50 &gt; SMA200. Fires late, confirms the long-term trend.</li>
-              </ul>
-              The <b>window between the two</b> (20/50 fired, 50/200 not yet) is what the Pre-Breakout archetype targets — the crowd is still waiting for the slow cross while the setup is already live.
-            </div>
+            <div class="def-term">Golden Cross <span class="tag">trend</span></div>
+            <div class="def-body">SMA50 &gt; SMA200. The window between 20/50 firing and 50/200 firing is the pre-breakout zone.</div>
           </div>
-
           <div class="def">
             <div class="def-term">52W Range Position <span class="tag">%</span></div>
-            <div class="def-body">Where price sits between the 52-week low (0%) and 52-week high (100%). <span class="def-good">55–80% = upper half, trend intact, not extended.</span> <span class="def-bad">&gt; 90% = at highs, no margin of safety.</span> <span style="color:var(--amber);">&lt; 20% = near lows, possible value or possible value trap.</span></div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">Trend Alignment <span class="tag">0–4</span></div>
-            <div class="def-body">Counts how many of {SMA20, SMA50, SMA100, SMA200} the price is above. <b>4/4</b> = full uptrend. <b>0/4</b> = full downtrend. <b>1–2</b> = early recovery.</div>
+            <div class="def-body">55–80% upper half, trend intact, not extended. &gt; 90% at highs.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-growth">
           <h2>Growth &amp; trajectory: FY vs TTM</h2>
-          <p class="lead">The single most under-used pattern in equity screens: <b>comparing TTM growth to FY growth</b>. When TTM &gt; FY on multiple metrics, the business has inflected <i>since the last reported annual</i> — and the market almost always lags this discovery by 3–9 months.</p>
-
-          <div class="def">
-            <div class="def-term">FY growth <span class="tag">annual</span></div>
-            <div class="def-body">Growth rate over the last reported fiscal year (e.g. FY24 vs FY23). This is what every broker model is anchored on.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">TTM growth <span class="tag">trailing 12m</span></div>
-            <div class="def-body">Growth rate over the last four reported quarters. This <b>includes quarters that FY data doesn't yet reflect</b>, so it picks up recent changes in trend much faster.</div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">TTM &gt; FY <span class="tag">acceleration</span></div>
-            <div class="def-body">
-              When TTM growth is higher than FY growth, the trend is <i>accelerating</i>. Two or more of these together — EBITDA, FCF, Net Income, Gross Profit — is what the Quiet Inflection archetype targets.
-              <br><br>
-              <span class="def-good">3–4 metrics accelerating = strong signal.</span> <span style="color:var(--amber);">1–2 = worth watching.</span> <span class="def-bad">0 = no inflection.</span>
-            </div>
-          </div>
-
-          <div class="def">
-            <div class="def-term">QoQ growth <span class="tag">quarterly</span></div>
-            <div class="def-body">Sequential growth between consecutive quarters. Positive QoQ confirms the FY/TTM trend is still live. Negative QoQ is an early warning that the trajectory is rolling over.</div>
-          </div>
+          <p class="lead">Comparing TTM growth to FY growth is one of the most under-used patterns in equity screens. When TTM &gt; FY on multiple metrics, the business has inflected since the last reported annual.</p>
         </section>
 
         <section class="help-section" id="help-archetypes">
           <h2>The 12 Hidden Gem archetypes</h2>
-          <p class="lead">Each archetype is a different way of finding <b>asymmetry</b> — a specific pattern that consensus screens miss. A stock can appear in multiple archetypes; the strongest divergences float to the top of each list.</p>
-
+          <p class="lead">Each archetype is a different way of finding asymmetry.</p>
           <div class="def">
             <div class="def-term">1. Cash Compounder <span class="tag">quality</span></div>
-            <div class="def-body">Negative accruals + cash conversion ≥ 1.1 + ROE not leverage-driven + FCF yield &gt; earnings yield. <b>The signal:</b> reported earnings understate real cash generation. Based on the Sloan (1996) accruals anomaly — one of the most robust accounting-based predictors in the literature. <b>Why consensus misses it:</b> accruals are not a headline number and require reading the cash flow statement.</div>
+            <div class="def-body">Negative accruals + cash conversion ≥ 1.1 + ROE not leverage-driven + FCF yield &gt; earnings yield.</div>
           </div>
-
           <div class="def">
             <div class="def-term">2. Quiet Inflection <span class="tag">growth</span></div>
-            <div class="def-body">≥ 2 of {EBITDA, FCF, Net Income, Gross Profit} have TTM growth &gt; FY growth, plus positive QoQ and RSI in the 45–68 band. <b>The signal:</b> the business has inflected since the last reported annual; sell-side models haven't caught up. <b>Why consensus misses it:</b> screens anchor on FY data.</div>
+            <div class="def-body">≥ 2 of {EBITDA, FCF, NI, GP} have TTM &gt; FY growth. RSI 45–68.</div>
           </div>
-
           <div class="def">
             <div class="def-term">3. Pre-Breakout <span class="tag">technical</span></div>
-            <div class="def-body">Golden Cross 20/50 fired + Golden Cross 50/200 not yet + ADX 18–28 with +DI &gt; −DI + BB width in bottom 20% + RSI 45–65. <b>The signal:</b> the setup <i>before</i> consensus flips to "Strong Buy". <b>Why consensus misses it:</b> momentum screens demand the slow cross confirmation, by which time 30–40% of the move is gone.</div>
+            <div class="def-body">Golden 20/50 fired, 50/200 not yet. ADX 18–28 with +DI &gt; −DI. BB squeeze.</div>
           </div>
-
           <div class="def">
             <div class="def-term">4. Sector Orphan <span class="tag">relative value</span></div>
-            <div class="def-body">Sector composite &gt; 70 + Overall score &lt; 75 + Altman Safe + Graham MoS &gt; 15%. <b>The signal:</b> best-in-class inside a sector the market dislikes. <b>Why consensus misses it:</b> sector-level narratives dominate stock-level analysis.</div>
+            <div class="def-body">Sector composite &gt; 70, overall score &lt; 75. Best-in-class inside a disliked sector.</div>
           </div>
-
           <div class="def">
             <div class="def-term">5. Forensic Clean <span class="tag">forensic</span></div>
-            <div class="def-body">Accruals &lt; 0.02 + cash conversion ≥ 0.9 + no receivables/inventory bloat + leverage contained + goodwill &lt; 15% of assets. <b>The signal:</b> the books survive Beneish M-Score and Montier C-Score scrutiny. <b>Why consensus misses it:</b> forensic accounting is not part of normal retail screens.</div>
+            <div class="def-body">Accruals &lt; 0.02, cash conversion ≥ 0.9, no receivables/inventory bloat.</div>
           </div>
-
           <div class="def">
             <div class="def-term">6. FCF King <span class="tag">cash yield</span></div>
-            <div class="def-body">FCF yield &gt; 7% + FCF margin &gt; 12% + CFO yield &gt; 10% + net debt/EBITDA &lt; 2 + cash conversion &gt; 1.0. <b>The signal:</b> cash flowing in faster than the market is pricing. <b>Why consensus misses it:</b> most screens look at P/E and ignore cash yields.</div>
+            <div class="def-body">FCF yield &gt; 7%, FCF margin &gt; 12%, net debt/EBITDA &lt; 2.</div>
           </div>
-
           <div class="def">
             <div class="def-term">7. Asset-Light Compounder <span class="tag">ROIC</span></div>
-            <div class="def-body">ROIC &gt; 18% + D/E &lt; 0.5 + operating margin &gt; 15% + FCF margin &gt; 10%. <b>The signal:</b> high returns without ballooning the balance sheet. Based on the asset growth anomaly (Fama-French CMA, q-factor). <b>Why consensus misses it:</b> the anomaly is academic and not in retail screens.</div>
+            <div class="def-body">ROIC &gt; 18%, D/E &lt; 0.5, operating margin &gt; 15%.</div>
           </div>
-
           <div class="def">
             <div class="def-term">8. Graham Net-Net <span class="tag">deep value</span></div>
-            <div class="def-body">Price / NCAV &lt; 1.0 (ideally &lt; 0.67) + current ratio &gt; 1.2 + Altman not Distress. <b>The signal:</b> trading below liquidation value. <b>Why consensus misses it:</b> rare, micro-cap, no analyst coverage.</div>
+            <div class="def-body">Price / NCAV &lt; 1.0 (ideally &lt; 0.67).</div>
           </div>
-
           <div class="def">
             <div class="def-term">9. Momentum Ignition <span class="tag">CANSLIM</span></div>
-            <div class="def-body">6M performance &gt; 10% + 52W range position &gt; 55% + TTM growth positive + EPS QoQ &gt; 0 + forward P/E &lt; trailing P/E. <b>The signal:</b> price and fundamental momentum aligning. <b>Why consensus misses it:</b> requires both technical and fundamental screens simultaneously.</div>
+            <div class="def-body">6M perf &gt; 10%, 52W position &gt; 55%, TTM growth positive.</div>
           </div>
-
           <div class="def">
             <div class="def-term">10. Buffett Quality <span class="tag">quality</span></div>
-            <div class="def-body">ROE &gt; 18% + ROIC &gt; 15% + D/E &lt; 0.5 + interest coverage &gt; 8× + net debt/EBITDA &lt; 1× + positive FCF + DuPont leverage &lt; 2. <b>The signal:</b> the durable cash-generative profile Buffett favours. <b>Why consensus misses it:</b> the combination of low debt and high returns is uncommon and often ignored in favour of pure growth.</div>
+            <div class="def-body">ROE &gt; 18%, ROIC &gt; 15%, D/E &lt; 0.5, interest coverage &gt; 8×.</div>
           </div>
-
           <div class="def">
             <div class="def-term">11. Dividend Growth <span class="tag">income</span></div>
-            <div class="def-body">Yield 1.5–5% + DPS growth YoY &gt; 8% + payout &lt; 60% + FCF yield &gt; 4% + ROE &gt; 14%. <b>The signal:</b> a growing, cash-backed, sustainable dividend. <b>Why consensus misses it:</b> yield screens chase the highest yield, which usually signals distress.</div>
+            <div class="def-body">Yield 1.5–5%, DPS growth &gt; 8%, payout &lt; 60%, FCF yield &gt; 4%.</div>
           </div>
-
           <div class="def">
             <div class="def-term">12. Working Capital Wizard <span class="tag">operations</span></div>
-            <div class="def-body">Receivables/assets &lt; 20% + inventory/assets &lt; 25% + current ratio 1.3–4 + cash conversion &gt; 1.0 + ROIC &gt; 14%. <b>The signal:</b> operational discipline visible in working capital. Based on Abarbanell &amp; Bushee (1998). <b>Why consensus misses it:</b> working capital ratios are not on standard screens.</div>
+            <div class="def-body">Receivables/assets &lt; 20%, inventory/assets &lt; 25%, cash conversion &gt; 1.0.</div>
           </div>
         </section>
 
         <section class="help-section" id="help-traps">
           <h2>Trap checks &amp; red flags</h2>
-          <p class="lead">Every gem card shows a "Trap check" row. This is a quick validity check on the underlying thesis.</p>
-
-          <h4>Altman</h4>
-          <p>Zone reading: Safe (≥ 2.6), Grey (1.1–2.6), Distress (&lt; 1.1). <span class="def-bad">Distress invalidates most archetypes.</span></p>
-
-          <h4>Int.Cov — Interest Coverage</h4>
-          <p><span class="def-good">≥ 3× is healthy.</span> <span class="def-bad">&lt; 2× is a red flag.</span> Below 1× means interest is not covered from operating profit.</p>
-
-          <h4>NetDebt/EBITDA</h4>
-          <p><span class="def-good">&lt; 2× is comfortable.</span> <span class="def-bad">&gt; 4× is stretched.</span></p>
-
-          <h4>Accruals</h4>
-          <p><span class="def-good">&lt; 0 is best (cash-backed earnings).</span> <span class="def-bad">&gt; 0.05 is warning.</span> <span class="def-bad">&gt; 0.15 is serious.</span></p>
-
-          <h4>CashConv — Cash Conversion</h4>
-          <p><span class="def-good">≥ 1.0 = every rupee of profit backed by cash.</span> <span class="def-bad">&lt; 0.7 = accrual-driven.</span></p>
+          <p class="lead">Every gem card shows a "Trap check" row.</p>
+          <ul>
+            <li><b>Altman</b> — Safe / Grey / Distress.</li>
+            <li><b>Int.Cov</b> — ≥ 3× healthy; &lt; 2× red flag.</li>
+            <li><b>NetDebt/EBITDA</b> — &lt; 2× comfortable; &gt; 4× stretched.</li>
+            <li><b>Accruals</b> — &lt; 0 best; &gt; 0.05 warning; &gt; 0.15 serious.</li>
+            <li><b>CashConv</b> — ≥ 1.0 good; &lt; 0.7 accrual-driven.</li>
+          </ul>
 
           <h3>Universal red flags</h3>
           <ul>
-            <li><b>All three ratings Strong Buy</b> — crowded trade, not a gem. Hidden Gem archetypes auto-exclude these (Momentum Ignition excepted).</li>
-            <li><b>52W range position &gt; 90%</b> — no margin of safety.</li>
-            <li><b>Altman Distress</b> — structurally risky; most archetypes auto-exclude.</li>
-            <li><b>Accruals &gt; 0.10 with Cash Conversion &lt; 0.7</b> — earnings quality is likely poor.</li>
-            <li><b>RSI &gt; 75 in a Pre-Breakout or Inflection candidate</b> — you're late.</li>
+            <li>All three ratings Strong Buy — crowded trade.</li>
+            <li>52W range position &gt; 90% — no margin of safety.</li>
+            <li>Altman Distress.</li>
+            <li>Accruals &gt; 0.10 with cash conversion &lt; 0.7.</li>
+            <li>RSI &gt; 75.</li>
           </ul>
 
           <div class="callout">
-            <b>Reminder:</b> none of this is investment advice. These are quantitative patterns from academic and practitioner literature, applied mechanically to a single CSV snapshot. Real investing requires reading annual reports, understanding the business, and considering the macro backdrop.
+            <b>Reminder:</b> none of this is investment advice. These are quantitative patterns from academic and practitioner literature. Real investing requires reading annual reports and understanding the business.
           </div>
         </section>
 
@@ -1372,7 +1473,16 @@ const state = {
   returnTab: null,
 };
 
+/* Universe benchmarks — computed at ingest for relative-strength proxies */
+const BENCH = {
+  perf3M: null,
+  perf6M: null,
+  perf1Y: null,
+  bbWidthP20: null,
+};
+
 const TAB_LABELS = {
+  today:'Today',
   overview:'Overview', fundamentals:'Fundamentals', technicals:'Technicals',
   risk:'Risk & Quality', sector:'Sector View', radar:'Radar Scan',
   search:'Symbol Search', suggestions:'Suggestions', gems:'Hidden Gems', help:'Help & Glossary'
@@ -1389,7 +1499,7 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 });
 
 /* ============================================================
-   TOPBAR HEIGHT — track so sticky tabs sit right below it
+   TOPBAR HEIGHT
 ============================================================ */
 function updateTopbarHeight(){
   const tb = document.querySelector('.topbar');
@@ -1409,6 +1519,12 @@ const fmtCr = v => { if (v === null) return '—'; const cr = v / 1e7; return cr
 const fmtPct = v => v === null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
 const str = v => (v === null || v === undefined || v === '') ? null : String(v).trim();
 const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+const median = arr => {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a,b) => a-b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid-1] + s[mid]) / 2;
+};
 
 function priceText(r){
   if (!r) return '—';
@@ -1500,10 +1616,19 @@ function ingest(rows){
     if (existing.__exch !== 'NSE' && exch === 'NSE') groups.set(key, r);
   });
   RAW = Array.from(groups.values()).map(normalizeRow);
+  computeBenchmarks();
   document.getElementById('emptyState').classList.add('hidden');
   document.getElementById('appRoot').classList.remove('hidden');
   document.getElementById('reloadBtn').classList.remove('hidden');
   renderAll();
+}
+
+function computeBenchmarks(){
+  BENCH.perf3M = median(RAW.map(r => r.Perf_3M).filter(v => v !== null));
+  BENCH.perf6M = median(RAW.map(r => r.Perf_6M).filter(v => v !== null));
+  BENCH.perf1Y = median(RAW.map(r => r.Perf_1Y).filter(v => v !== null));
+  const bb = RAW.map(r => r['BB_Width_%']).filter(v => v !== null).sort((a,b) => a-b);
+  BENCH.bbWidthP20 = bb.length ? bb[Math.floor(bb.length * 0.2)] : null;
 }
 
 function normalizeRow(r){
@@ -1521,13 +1646,9 @@ function normalizeRow(r){
     ncav = totalCurrentAssets - totalLiabilitiesEst;
   }
   let ncavPerShare = null;
-  if (ncav !== null && sharesOut !== null && sharesOut > 0) {
-    ncavPerShare = ncav / sharesOut;
-  }
+  if (ncav !== null && sharesOut !== null && sharesOut > 0) ncavPerShare = ncav / sharesOut;
   let priceToNcav = null;
-  if (ncav !== null && ncav > 0 && marketCap !== null) {
-    priceToNcav = marketCap / ncav;
-  }
+  if (ncav !== null && ncav > 0 && marketCap !== null) priceToNcav = marketCap / ncav;
 
   return {
     symbol: r.__symbol,
@@ -1740,19 +1861,16 @@ document.getElementById('tabs').addEventListener('click', e => {
   document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
   state.returnTab = null;
   updateBackButton();
-  // Update hamburger label + close drawer (mobile)
   setHamburgerLabel((btn.textContent || '').replace(/\s+\d+\s*$/, '').trim());
   closeHamburger();
 });
 
-// Close on outside click
 document.addEventListener('click', e => {
   if (!tabsWrap?.classList.contains('open')) return;
   if (e.target.closest('.tabs-wrap')) return;
   closeHamburger();
 });
 
-// Close on Escape
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeHamburger();
 });
@@ -1777,7 +1895,6 @@ function goBack(){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + t));
   updateBackButton();
-  // Sync hamburger label
   const active = document.querySelector('.tab-btn.active');
   if (active) setHamburgerLabel((active.textContent || '').replace(/\s+\d+\s*$/, '').trim());
 }
@@ -1788,6 +1905,7 @@ document.getElementById('backBtn').addEventListener('click', goBack);
 ============================================================ */
 function renderAll(){
   chartDefaults();
+  renderToday();
   renderKpis();
   renderOverviewCharts();
   renderFundamentals();
@@ -1801,6 +1919,377 @@ function renderAll(){
   initRadarScan();
   updateTopbarHeight();
 }
+
+/* ============================================================
+   TODAY TAB — conviction-scored entry decisions
+============================================================ */
+
+/* Relative strength vs universe median */
+function rs3M(r){ return (r.Perf_3M === null || BENCH.perf3M === null) ? null : r.Perf_3M - BENCH.perf3M; }
+function rs6M(r){ return (r.Perf_6M === null || BENCH.perf6M === null) ? null : r.Perf_6M - BENCH.perf6M; }
+function rs1Y(r){ return (r.Perf_1Y === null || BENCH.perf1Y === null) ? null : r.Perf_1Y - BENCH.perf1Y; }
+
+/* Volatility squeeze detection */
+function isSqueeze(r){
+  if (r['BB_Width_%'] === null || BENCH.bbWidthP20 === null) return false;
+  return r['BB_Width_%'] <= BENCH.bbWidthP20;
+}
+
+/* Five-pillar conviction score (0–100) */
+function computeConviction(r){
+  const pillars = { trend: 0, momentum: 0, volume: 0, volatility: 0, fundamental: 0 };
+
+  // TREND (25 max)
+  if (r.Above_SMA50 === 'YES')  pillars.trend += 7;
+  if (r.Above_SMA200 === 'YES') pillars.trend += 8;
+  if (r.Golden_Cross_20_50 === 'YES')  pillars.trend += 5;
+  if (r.Golden_Cross_50_200 === 'YES') pillars.trend += 5;
+
+  // MOMENTUM (25 max)
+  const rs3 = rs3M(r), rs6 = rs6M(r);
+  if (rs3 !== null && rs3 > 0)  pillars.momentum += 8;
+  if (rs3 !== null && rs3 > 5)  pillars.momentum += 2; // extra for strong outperform
+  if (rs6 !== null && rs6 > 0)  pillars.momentum += 7;
+  if (r.RSI !== null && r.RSI >= 45 && r.RSI <= 68) pillars.momentum += 5;
+  if (r.MACD_Cross && String(r.MACD_Cross).toLowerCase().includes('bull')) pillars.momentum += 3;
+
+  // VOLUME (20 max)
+  if (r.Volume_Ratio_30D !== null){
+    if (r.Volume_Ratio_30D >= 1.5) pillars.volume += 20;
+    else if (r.Volume_Ratio_30D >= 1.1) pillars.volume += 12;
+    else if (r.Volume_Ratio_30D >= 0.9) pillars.volume += 6;
+  }
+
+  // VOLATILITY (15 max)
+  if (isSqueeze(r)) pillars.volatility += 10;
+  if (r.ADX !== null && r.ADX >= 18 && r.ADX <= 30) pillars.volatility += 5;
+  else if (r.ADX !== null && r.ADX > 30) pillars.volatility += 3;
+
+  // FUNDAMENTAL (15 max)
+  if (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 7) pillars.fundamental += 10;
+  else if (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 5) pillars.fundamental += 5;
+  if ((r.Altman_Zone||'').toLowerCase() === 'safe') pillars.fundamental += 5;
+  else if ((r.Altman_Zone||'').toLowerCase() === 'grey') pillars.fundamental += 2;
+
+  const total = Object.values(pillars).reduce((a,b)=>a+b,0);
+  return { total, pillars };
+}
+
+function computeRedFlags(r){
+  const flags = [];
+  if (r.Above_SMA200 === 'NO') flags.push('Below 200-DMA');
+  if (r.RSI !== null && r.RSI > 75) flags.push('RSI overbought');
+  if (r.RSI !== null && r.RSI < 22) flags.push('RSI deeply oversold');
+  if ((r.Altman_Zone || '').toLowerCase() === 'distress') flags.push('Altman distress');
+  if (r.Debt_to_Equity !== null && r.Debt_to_Equity > 2) flags.push('High leverage');
+  if (r.Interest_Coverage !== null && r.Interest_Coverage < 2) flags.push('Weak interest cover');
+  if (r.Accruals_Ratio !== null && r.Accruals_Ratio > 0.10) flags.push('High accruals');
+  if (r['52W_Range_Position_%'] !== null && r['52W_Range_Position_%'] > 96) flags.push('At 52W high');
+  if (r.Perf_1M !== null && r.Perf_1M > 25) flags.push('Parabolic 1M');
+  if (r.Death_Cross_20_50 === 'YES') flags.push('Death cross');
+  if (r.Tech_Rating === 'Strong Sell') flags.push('Strong Sell rating');
+  if (r.Cash_Conversion !== null && r.Cash_Conversion < 0.5) flags.push('Poor cash conversion');
+  return flags;
+}
+
+function computeChecks(r){
+  const trend = r.Above_SMA50 === 'YES' && r.Above_SMA200 === 'YES';
+  const volume = r.Volume_Ratio_30D !== null && r.Volume_Ratio_30D >= 1.05;
+  const clean = (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 6)
+    && (r.Altman_Zone || '').toLowerCase() !== 'distress'
+    && (r.Debt_to_Equity === null || r.Debt_to_Equity <= 1.5);
+  return [
+    { label: 'Trend', pass: trend },
+    { label: 'Volume', pass: volume },
+    { label: 'Clean', pass: clean },
+  ];
+}
+
+function computeVerdict(conviction, redFlags, r, regime){
+  const flagCount = redFlags.length;
+
+  // Hard stop rules
+  if (flagCount >= 2) return 'AVOID';
+  if (conviction.total < 40) return 'AVOID';
+
+  const rsiOk = r.RSI === null || (r.RSI >= 35 && r.RSI <= 72);
+
+  // BUY gate: bullish regime + high conviction + clean + RSI ok
+  if (regime.cls === 'bull' &&
+      conviction.total >= 75 &&
+      flagCount === 0 &&
+      rsiOk) return 'BUY';
+
+  // WAIT: decent setup needing a trigger
+  if (conviction.total >= 55) return 'WAIT';
+
+  return 'AVOID';
+}
+
+function computeLevels(r){
+  const close = r.Close;
+  if (!close || close <= 0) return null;
+
+  const atrPct = (r['ATR_%'] !== null && r['ATR_%'] !== undefined) ? r['ATR_%'] : 3.0;
+  const stopPct = Math.max(atrPct * 2, 5.0);
+
+  const stop = close * (1 - stopPct / 100);
+  let target = close * (1 + 2 * stopPct / 100);
+
+  if (r.High_52W && r.High_52W > close * 1.02 && r.High_52W < target) {
+    target = r.High_52W;
+  }
+
+  const rr = (target - close) / (close - stop);
+  return { entry: close, stop, target, rr, stopPct };
+}
+
+function computeTrigger(r){
+  const close = r.Close;
+  if (!close) return null;
+
+  // Squeeze breakout — highest conviction trigger
+  if (isSqueeze(r)) {
+    const trig = close * 1.015;
+    return { text: `Squeeze setup — buy on breakout above ₹${trig.toFixed(0)} with volume ≥ 1.5× avg` };
+  }
+
+  if (r.RSI !== null && r.RSI > 72) {
+    const pull = close * 0.955;
+    return { text: `Wait for pullback to ₹${pull.toFixed(0)} — RSI still overbought (${r.RSI.toFixed(0)})` };
+  }
+
+  if (r.ADX !== null && r.ADX < 18) {
+    return { text: `Wait for ADX > 22 and +DI > −DI — trend not yet confirmed (ADX ${r.ADX.toFixed(0)})` };
+  }
+
+  if (r.High_52W && close < r.High_52W * 0.98) {
+    const trig = r.High_52W * 1.005;
+    return { text: `Buy on breakout above ₹${trig.toFixed(0)} (52W high) with volume confirmation` };
+  }
+
+  const trig = close * 1.04;
+  return { text: `Watch ₹${trig.toFixed(0)} (4% above current price) — needs volume to confirm` };
+}
+
+function computeFreshness(r){
+  if (isSqueeze(r) && (r.RSI === null || (r.RSI >= 40 && r.RSI <= 70))) {
+    return { label: 'Squeeze', cls: 'squeeze', reason: 'BB contracting' };
+  }
+  const rsi = r.RSI, p1m = r.Perf_1M, pos52 = r['52W_Range_Position_%'];
+
+  if (rsi !== null && rsi > 72) return { label: 'Extended', cls: 'extended', reason: 'RSI ' + rsi.toFixed(0) };
+  if (p1m !== null && p1m > 18) return { label: 'Extended', cls: 'extended', reason: '1M +' + p1m.toFixed(1) + '%' };
+  if (pos52 !== null && pos52 > 90) return { label: 'Extended', cls: 'extended', reason: 'Near 52W high' };
+
+  if (p1m !== null && p1m >= 1 && rsi !== null && rsi >= 45 && rsi <= 70) {
+    return { label: 'Fresh', cls: 'fresh', reason: '1M +' + p1m.toFixed(1) + '%' };
+  }
+  if (p1m !== null && p1m < -3 && rsi !== null && rsi < 40) {
+    return { label: 'Weak', cls: 'weak', reason: 'Falling' };
+  }
+  return { label: 'Quiet', cls: 'quiet', reason: 'In range' };
+}
+
+function computePositionSize(r){
+  const atr = r['ATR_%'];
+  if (atr === null || atr === undefined) return 'Standard size';
+  if (atr < 2.5) return 'Standard size';
+  if (atr < 5) return 'Half size';
+  return 'Quarter size';
+}
+
+function computeRegime(){
+  const total = RAW.length;
+  if (!total) return null;
+  const above50 = RAW.filter(r => r.Above_SMA50 === 'YES').length;
+  const pctAbove = above50 / total;
+  const newHighs = RAW.filter(r => (r['52W_Range_Position_%'] ?? 0) > 95).length;
+  const newLows  = RAW.filter(r => (r['52W_Range_Position_%'] ?? 100) < 5).length;
+
+  let label, cls, advice;
+  if (pctAbove > 0.55 && newHighs > newLows * 1.5) {
+    label = 'Confirmed Uptrend'; cls = 'bull';
+    advice = 'Normal position sizes. Trade the BUY list freely, but respect the stops.';
+  } else if (pctAbove > 0.45 && newHighs > newLows) {
+    label = 'Mild Uptrend'; cls = 'bull';
+    advice = 'Standard discipline applies. Stick to high-conviction setups.';
+  } else if (pctAbove < 0.35 || newLows > newHighs * 1.5) {
+    label = 'Defensive'; cls = 'def';
+    advice = 'Avoid new entries unless exceptional. Tighten stops on existing positions.';
+  } else {
+    label = 'Choppy'; cls = 'chop';
+    advice = 'Reduce size, tighten stops, take profits faster.';
+  }
+  return { label, cls, advice, pctAbove, newHighs, newLows };
+}
+
+function convictionClass(v){
+  if (v >= 75) return 'high';
+  if (v >= 55) return 'mid';
+  return 'low';
+}
+function pillarClass(pv, max){
+  const r = pv / max;
+  if (r >= 0.7) return 'ok';
+  if (r >= 0.4) return 'mid';
+  return 'bad';
+}
+
+function renderToday(){
+  if (!RAW.length) return;
+
+  const regime = computeRegime();
+
+  const scored = RAW.map(r => {
+    const redFlags = computeRedFlags(r);
+    const conviction = computeConviction(r);
+    const verdict = computeVerdict(conviction, redFlags, r, regime);
+    const levels = computeLevels(r);
+    const trigger = verdict === 'WAIT' ? computeTrigger(r) : null;
+    const freshness = computeFreshness(r);
+    const positionSize = computePositionSize(r);
+    const checks = computeChecks(r);
+    const rs = rs3M(r);
+    return { r, redFlags, conviction, verdict, levels, trigger, freshness, positionSize, checks, rs };
+  });
+
+  const buys = scored.filter(x => x.verdict === 'BUY')
+    .sort((a, b) => {
+      if (b.conviction.total !== a.conviction.total) return b.conviction.total - a.conviction.total;
+      const rrA = a.levels?.rr || 0, rrB = b.levels?.rr || 0;
+      return rrB - rrA;
+    })
+    .slice(0, 12);
+
+  const waits = scored.filter(x => x.verdict === 'WAIT')
+    .sort((a, b) => b.conviction.total - a.conviction.total)
+    .slice(0, 24);
+
+  const avoids = scored.filter(x => x.verdict === 'AVOID')
+    .sort((a, b) => b.redFlags.length - a.redFlags.length || a.conviction.total - b.conviction.total)
+    .slice(0, 30);
+
+  const regimeEl = document.getElementById('regimeBanner');
+  if (regime && regimeEl) {
+    regimeEl.className = 'regime-banner ' + regime.cls;
+    regimeEl.innerHTML = `
+      <div>
+        <div class="rb-label">Market: ${regime.label}</div>
+        <div class="rb-sub">${regime.advice}</div>
+      </div>
+      <div class="rb-stats">
+        <div class="rb-stat"><div class="rb-stat-v">${(regime.pctAbove*100).toFixed(0)}%</div><div class="rb-stat-l">above 50-DMA</div></div>
+        <div class="rb-stat"><div class="rb-stat-v up">${regime.newHighs}</div><div class="rb-stat-l">new highs</div></div>
+        <div class="rb-stat"><div class="rb-stat-v down">${regime.newLows}</div><div class="rb-stat-l">new lows</div></div>
+      </div>
+    `;
+  }
+
+  renderTodaySection('buyNowGrid', buys, 'buy');
+  renderTodaySection('waitGrid', waits, 'wait');
+  renderTodaySection('avoidGrid', avoids, 'avoid');
+
+  document.getElementById('buyNowCount').textContent = buys.length + ' stock' + (buys.length === 1 ? '' : 's');
+  document.getElementById('waitCount').textContent = waits.length + ' stock' + (waits.length === 1 ? '' : 's');
+  document.getElementById('avoidCount').textContent = avoids.length + ' stock' + (avoids.length === 1 ? '' : 's');
+}
+
+function renderTodaySection(gridId, items, kind){
+  const el = document.getElementById(gridId);
+  if (!el) return;
+  if (!items.length) {
+    const msg = kind === 'buy'
+      ? 'No clear buys right now. Check the WAIT list for setups close to triggering.'
+      : kind === 'wait'
+        ? 'Nothing on the waitlist. The BUY list above is where the action is.'
+        : 'No severe red flags in the universe right now.';
+    el.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">${msg}</div>`;
+    return;
+  }
+  el.innerHTML = items.map(x => buildTodayCard(x, kind)).join('');
+}
+
+function buildTodayCard(x, kind){
+  const r = x.r;
+  const levels = x.levels;
+  const freshness = x.freshness;
+  const conv = x.conviction;
+
+  const checksHTML = x.checks.map(c =>
+    `<span class="tc-check ${c.pass ? 'ok' : 'bad'}">${c.pass ? '✓' : '✗'} ${c.label}</span>`
+  ).join('');
+
+  const pillarsHTML = `
+    <div class="tc-pillars">
+      <div class="tc-pillar ${pillarClass(conv.pillars.trend,25)}">Trend<span class="pv">${conv.pillars.trend}</span></div>
+      <div class="tc-pillar ${pillarClass(conv.pillars.momentum,25)}">Mom<span class="pv">${conv.pillars.momentum}</span></div>
+      <div class="tc-pillar ${pillarClass(conv.pillars.volume,20)}">Vol<span class="pv">${conv.pillars.volume}</span></div>
+      <div class="tc-pillar ${pillarClass(conv.pillars.volatility,15)}">Vola<span class="pv">${conv.pillars.volatility}</span></div>
+      <div class="tc-pillar ${pillarClass(conv.pillars.fundamental,15)}">Fund<span class="pv">${conv.pillars.fundamental}</span></div>
+    </div>`;
+
+  const levelsHTML = levels ? `
+    <div class="tc-levels">
+      <div class="tc-level"><div class="lbl">Entry</div><div class="val">₹${levels.entry.toFixed(0)}</div></div>
+      <div class="tc-level"><div class="lbl">Stop</div><div class="val down">₹${levels.stop.toFixed(0)}</div></div>
+      <div class="tc-level"><div class="lbl">Target</div><div class="val up">₹${levels.target.toFixed(0)}</div></div>
+      <div class="tc-level"><div class="lbl">R:R</div><div class="val">${levels.rr.toFixed(1)}</div></div>
+    </div>` : '';
+
+  const triggerHTML = x.trigger ? `<div class="tc-trigger">${x.trigger.text}</div>` : '';
+
+  const flagsHTML = x.redFlags.length ? `
+    <div class="tc-flags">
+      ${x.redFlags.slice(0, 5).map(f => `<span class="tc-flag">${f}</span>`).join('')}
+    </div>` : '';
+
+  const rsHTML = x.rs !== null
+    ? `<span class="tc-rs ${x.rs >= 0 ? 'pos' : 'neg'}">RS 3M ${x.rs >= 0 ? '+' : ''}${x.rs.toFixed(1)}%</span>`
+    : '';
+
+  return `
+    <div class="today-card ${kind}" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
+      <div class="tc-head">
+        <div>
+          <div class="tc-name">${r.name || r.symbol}</div>
+          <div class="tc-sym">${r.exchange}:${r.symbol} · ₹${r.Close != null ? r.Close.toFixed(0) : '—'} · ${r.sector}</div>
+        </div>
+        <div class="tc-verdict ${kind}">${x.verdict}</div>
+      </div>
+
+      <div class="tc-conviction-block">
+        <div class="tc-conviction-val ${convictionClass(conv.total)}">${conv.total}</div>
+        <div class="tc-conviction-meta">
+          <div class="cm-label">Conviction score</div>
+          <div class="cm-desc">${conv.total >= 75 ? 'High — all pillars aligned' : conv.total >= 55 ? 'Medium — good setup' : 'Low — proceed with caution'}</div>
+        </div>
+      </div>
+
+      ${pillarsHTML}
+
+      <div class="tc-checks">${checksHTML}</div>
+      ${levelsHTML}
+      ${triggerHTML}
+      ${flagsHTML}
+
+      <div class="tc-foot">
+        <span class="tc-fresh ${freshness.cls}">● ${freshness.label}</span>
+        ${rsHTML}
+        <span>${x.positionSize}</span>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById('toggleAvoid')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const grid = document.getElementById('avoidGrid');
+  const btn = e.currentTarget;
+  if (!grid) return;
+  grid.classList.toggle('hidden');
+  btn.textContent = grid.classList.contains('hidden') ? 'Show' : 'Hide';
+});
 
 /* ============================================================
    KPIs
@@ -2414,6 +2903,7 @@ function renderDetail(r){
     r.Golden_Cross_50_200 === 'YES' ? '<span class="pill buy">Golden Cross</span>' : '',
     r.Death_Cross_20_50 === 'YES' ? '<span class="pill sell">Death Cross</span>' : '',
     r.Price_to_NCAV !== null && r.Price_to_NCAV < 1 ? '<span class="pill buy">Below NCAV</span>' : '',
+    isSqueeze(r) ? '<span class="pill violet">BB Squeeze</span>' : '',
   ];
   document.getElementById('dTags').innerHTML = tags.filter(Boolean).join('')
     + (r.Signals ? r.Signals.split('|').map(s => `<span class="pill violet">${s.trim()}</span>`).join('') : '');
@@ -2424,7 +2914,7 @@ function renderDetail(r){
     ['Rev Growth YoY', fmtPct(r.Revenue_Growth_YoY)], ['EPS Growth YoY', fmtPct(r.EPS_Growth_YoY)],
     ['Div Yield', fmt(r.Dividend_Yield,2)+'%'], ['EV/EBITDA', fmt(r.EV_EBITDA,1)+'x'],
     ['Altman Z', fmt(r.Altman_Z,2)], ['Graham MoS', fmtPct(r.Graham_Margin_of_Safety)],
-    ['FCF Yield', fmt(r.FCF_Yield*100,1)+'%'], ['NCAV', fmtCr(r.NCAV)],
+    ['FCF Yield', r.FCF_Yield !== null ? fmt(r.FCF_Yield*100,1)+'%' : '—'], ['NCAV', fmtCr(r.NCAV)],
   ];
   document.getElementById('dMetrics').innerHTML = metrics.map(m =>
     `<div class="metric"><div class="m-label">${m[0]}</div><div class="m-val">${m[1]}</div></div>`).join('');
@@ -2554,19 +3044,19 @@ function runScreen(){
   }
 
   grid.innerHTML = shortlisted.slice(0,30).map((r,i) => `
-    <div class="suggest-card" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
-      <div class="rank">#${i+1} · ${r.exchange}:${r.symbol} · <span class="price-inline">${priceText(r)}</span></div>
-      <div class="sname">${r.name || r.symbol}</div>
-      <div class="stags">
+    <div class="suggest-card card" style="cursor:pointer; padding:14px 16px;" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
+      <div style="font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-bottom:6px;">#${i+1} · ${r.exchange}:${r.symbol} · <span class="price-inline">${priceText(r)}</span></div>
+      <div style="font-family:var(--font-display); font-size:15px; font-weight:600; margin-bottom:8px;">${r.name || r.symbol}</div>
+      <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
         ${pill(r.Tech_Rating)}${pill(r.Altman_Zone)}
         <span class="pill neutral">Overall ${fmt(r.Overall_Score,0)}</span>
         <span class="pill neutral">F-Score ${r.Piotroski_F_Score}/9</span>
       </div>
-      <div class="sfacts">
-        <div>ROE <b>${fmt(r.ROE,1)}%</b></div><div>P/E <b>${fmt(r.PE,1)}x</b></div>
-        <div>D/E <b>${fmt(r.Debt_to_Equity,2)}</b></div><div>RSI <b>${fmt(r.RSI,0)}</b></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11.5px; font-family:var(--font-mono); color:var(--muted); margin-bottom:10px;">
+        <div>ROE <b style="color:var(--text);">${fmt(r.ROE,1)}%</b></div><div>P/E <b style="color:var(--text);">${fmt(r.PE,1)}x</b></div>
+        <div>D/E <b style="color:var(--text);">${fmt(r.Debt_to_Equity,2)}</b></div><div>RSI <b style="color:var(--text);">${fmt(r.RSI,0)}</b></div>
       </div>
-      <div class="why">${r.Signals ? r.Signals.split('|').slice(0,3).map(s=>s.trim()).join(', ') : 'Solid overall score with a favourable technical read.'}</div>
+      <div style="font-size:11.5px; color:var(--muted); line-height:1.5;">${r.Signals ? r.Signals.split('|').slice(0,3).map(s=>s.trim()).join(', ') : 'Solid overall score with a favourable technical read.'}</div>
     </div>`).join('');
 }
 
@@ -2577,7 +3067,7 @@ const ARCHETYPES = [
   {
     id: 'compounder', name: 'Cash Compounder', color: 'var(--teal)', iconCls: 'cmpd',
     blurb: 'Quietly converting profit into cash. Consensus screens stop at "positive CFO" — we look at accruals, cash conversion, and whether ROE comes from operations or leverage.',
-    help: `<b>What it looks for:</b> reported earnings <i>understating</i> cash generation. The Sloan accruals anomaly — negative accruals (CFO &gt; Net Income) — is one of the most academically validated "hidden" signals in equities. We add DuPont decomposition to make sure ROE isn't leverage-driven, and yield spreads to make sure FCF is being priced below earnings.`,
+    help: `<b>What it looks for:</b> reported earnings <i>understating</i> cash generation. The Sloan accruals anomaly — negative accruals — is one of the most academically validated "hidden" signals in equities.`,
     criteria: 'Accruals &lt; 0 · Cash Conversion ≥ 1.1 · DuPont leverage &lt; 2.0 · DuPont ROE &gt; 12 · FCF Yield &gt; Earnings Yield',
     matches: r => {
       const reasons = [];
@@ -2591,8 +3081,8 @@ const ARCHETYPES = [
   },
   {
     id: 'inflection', name: 'Quiet Inflection', color: 'var(--amber)', iconCls: 'infl',
-    blurb: "The numbers are accelerating but the multiple hasn't caught up. We compare TTM growth to FY growth — when TTM is ahead, the business has inflected since the last reported annual.",
-    help: `<b>What it looks for:</b> a recent change in trend that hasn't been priced. TTM growth reflects the last four quarters; FY growth reflects the last reported fiscal year. When TTM &gt; FY on multiple metrics, the trend is <i>accelerating</i>. Sell-side models anchor on the last reported FY, so this window is systematically mispriced.`,
+    blurb: "The numbers are accelerating but the multiple hasn't caught up. We compare TTM growth to FY growth.",
+    help: `<b>What it looks for:</b> a recent change in trend that hasn't been priced. When TTM &gt; FY on multiple metrics, the trend is <i>accelerating</i>.`,
     criteria: '≥ 2 of {EBITDA, FCF, NI, GP} have TTM &gt; FY growth · NI QoQ &gt; 0 · RSI 45–68 · ADX 15–32',
     matches: r => {
       const reasons = [];
@@ -2614,8 +3104,8 @@ const ARCHETYPES = [
   },
   {
     id: 'breakout', name: 'Pre-Breakout', color: 'var(--violet)', iconCls: 'brk',
-    blurb: "Volatility compression before expansion. Golden 20/50 has crossed, the 50/200 hasn't yet. ADX is developing. Bollinger width is in the bottom quintile.",
-    help: `<b>What it looks for:</b> the technical setup <i>before</i> the consensus flips. TradingView's "Strong Buy" rating fires after the move; by the time the 50/200 cross confirms, 30–40% of the trend is gone. The highest risk/reward window is when the fast cross has fired, the slow cross hasn't yet, and volatility is compressed.`,
+    blurb: "Volatility compression before expansion. Golden 20/50 has crossed, the 50/200 hasn't yet.",
+    help: `<b>What it looks for:</b> the technical setup <i>before</i> consensus flips. The highest risk/reward window is when the fast cross has fired, the slow cross hasn't yet, and volatility is compressed.`,
     criteria: 'Golden 20/50 = YES · Golden 50/200 = NO · ADX 18–28 & rising · BB width bottom 20% · RSI 45–65 · volume &gt; 1.15× avg',
     matches: r => {
       const reasons = [];
@@ -2633,8 +3123,8 @@ const ARCHETYPES = [
   },
   {
     id: 'orphan', name: 'Sector Orphan', color: 'var(--blue)', iconCls: 'orph',
-    blurb: "Best in class inside a sector the market dislikes. Cheap and good simultaneously. Structurally rare.",
-    help: `<b>What it looks for:</b> a valuation disconnect the market has already created. Sometimes the sector gets de-rated while an individual name inside it is still compounding. Strong sector-relative scores combined with a below-universe composite score is exactly that pattern.`,
+    blurb: "Best in class inside a sector the market dislikes.",
+    help: `<b>What it looks for:</b> a valuation disconnect the market has already created. Strong sector-relative scores combined with a below-universe composite score.`,
     criteria: 'Sector composite &gt; 70 · Overall score &lt; 75 · Altman Safe · Graham MoS &gt; 15%',
     matches: r => {
       const reasons = [];
@@ -2648,8 +3138,8 @@ const ARCHETYPES = [
   },
   {
     id: 'forensic', name: 'Forensic Clean', color: 'var(--coral)', iconCls: 'forn',
-    blurb: 'Accounting that survives forensic scrutiny. The Beneish M-Score and Montier C-Score frameworks exist to catch manipulators — here we invert them.',
-    help: `<b>What it looks for:</b> accounting integrity. Beneish's M-Score (1999) and Montier's C-Score (2008) flag manipulation patterns. We invert the logic: <i>negative</i> on every flag means clean books.`,
+    blurb: 'Accounting that survives forensic scrutiny.',
+    help: `<b>What it looks for:</b> accounting integrity. We invert the Beneish M-Score and Montier C-Score logic.`,
     criteria: 'Accruals &lt; 0.02 · Cash conversion ≥ 0.9 · No receivables/inventory bloat · Leverage contained · Goodwill &lt; 15% of assets',
     matches: r => {
       const reasons = [];
@@ -2665,7 +3155,7 @@ const ARCHETYPES = [
   },
   {
     id: 'fcfking', name: 'FCF King', color: 'var(--lime)', iconCls: 'fcf',
-    blurb: 'Free cash flow yield that the market is ignoring. Cash cannot be manipulated the way accounting earnings can.',
+    blurb: 'Free cash flow yield that the market is ignoring.',
     help: `<b>What it looks for:</b> businesses generating cash faster than the market is pricing. A yield above 7–8% puts the stock in the top decile of cash generation.`,
     criteria: 'FCF Yield &gt; 7% · FCF Margin &gt; 12% · CFO Yield &gt; 10% · Net Debt/EBITDA &lt; 2 · Cash Conversion &gt; 1.0',
     matches: r => {
@@ -2681,7 +3171,7 @@ const ARCHETYPES = [
   },
   {
     id: 'assetlight', name: 'Asset-Light Compounder', color: 'var(--pink)', iconCls: 'asset',
-    blurb: "Low asset growth, high returns on capital. Asset-light compounders grow returns without growing the balance sheet.",
+    blurb: "Low asset growth, high returns on capital.",
     help: `<b>What it looks for:</b> the other side of the investment factor. Fama-French's CMA and the q-factor both show that high asset growth predicts <i>lower</i> future returns.`,
     criteria: 'ROIC &gt; 18% · D/E &lt; 0.5 · Operating margin &gt; 15% · FCF margin &gt; 10%',
     matches: r => {
@@ -2697,8 +3187,8 @@ const ARCHETYPES = [
   },
   {
     id: 'netnet', name: 'Graham Net-Net', color: 'var(--orange)', iconCls: 'nn',
-    blurb: "Trading below liquidation value. Graham's net-net rule: buy for less than current assets minus all liabilities.",
-    help: `<b>What it looks for:</b> deep balance-sheet value. NCAV = Total Current Assets − Total Liabilities. Buy below 0.67× NCAV for a margin of safety.`,
+    blurb: "Trading below liquidation value.",
+    help: `<b>What it looks for:</b> deep balance-sheet value. NCAV = Total Current Assets − Total Liabilities.`,
     criteria: 'Price / NCAV &lt; 0.67 · Current Ratio &gt; 1.2 · Altman not Distress',
     matches: r => {
       const reasons = [];
@@ -2716,7 +3206,7 @@ const ARCHETYPES = [
   },
   {
     id: 'ignition', name: 'Momentum Ignition', color: 'var(--blue)', iconCls: 'ign',
-    blurb: "Price relative strength colliding with improving fundamentals. The classic CANSLIM setup.",
+    blurb: "Price relative strength colliding with improving fundamentals.",
     help: `<b>What it looks for:</b> the intersection of price momentum and fundamental momentum. O'Neil's CANSLIM framework.`,
     criteria: 'Perf 6M &gt; 10% · 52W range position &gt; 55% · TTM growth positive · EPS QoQ &gt; 0 · PE Forward &lt; PE',
     matches: r => {
@@ -2733,7 +3223,7 @@ const ARCHETYPES = [
   },
   {
     id: 'buffett', name: 'Buffett Quality', color: 'var(--teal)', iconCls: 'buf',
-    blurb: "High ROE, low debt, durable margins. Buffett's acquisition criteria applied quantitatively.",
+    blurb: "High ROE, low debt, durable margins.",
     help: `<b>What it looks for:</b> the Buffett-style quality compounder — high returns, low leverage, strong interest coverage.`,
     criteria: 'ROE &gt; 18% · ROIC &gt; 15% · D/E &lt; 0.5 · Int.Cov &gt; 8× · NetDebt/EBITDA &lt; 1× · positive FCF',
     matches: r => {
@@ -2751,7 +3241,7 @@ const ARCHETYPES = [
   },
   {
     id: 'divgrowth', name: 'Dividend Growth', color: 'var(--amber)', iconCls: 'div',
-    blurb: 'Rising dividends backed by free cash flow. Not the highest yield — the most sustainable and growing yield.',
+    blurb: 'Rising dividends backed by free cash flow.',
     help: `<b>What it looks for:</b> a dividend that is both growing and safe. Moderate yield, low payout, growing DPS, FCF coverage.`,
     criteria: 'Yield 1.5–5% · DPS Growth &gt; 8% YoY · Payout &lt; 60% · FCF Yield &gt; 4% · ROE &gt; 14%',
     matches: r => {
@@ -2767,7 +3257,7 @@ const ARCHETYPES = [
   },
   {
     id: 'wcwizard', name: 'Working Capital Wizard', color: 'var(--violet)', iconCls: 'wc',
-    blurb: 'Working capital improving, receivables under control. The balance sheet is getting leaner while the business grows.',
+    blurb: 'Working capital improving, receivables under control.',
     help: `<b>What it looks for:</b> operational discipline in the working capital accounts. Based on Abarbanell &amp; Bushee (1998).`,
     criteria: 'Receivables/Assets &lt; 20% · Inventory/Assets &lt; 25% · Current Ratio 1.3–4 · Cash Conversion &gt; 1.0 · ROIC &gt; 14%',
     matches: r => {
@@ -2957,7 +3447,7 @@ function renderArchetypeGrid(){
 document.getElementById('applyGems').addEventListener('click', runGemScan);
 
 /* ============================================================
-   OHLCV DATA INTEGRATION (lazy load, silent when index.json absent)
+   OHLCV DATA INTEGRATION (lazy load)
 ============================================================ */
 let OHLCV_DATA = null;
 let OHLCV_LOADING = false;
@@ -2990,14 +3480,26 @@ function getOHLCVHistory(ticker, limit = Infinity) {
   }));
 }
 
+/* --- SMA calculation for chart overlays --- */
+function calculateSMA(data, period) {
+  const out = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      out.push({ time: data[i].time, value: null });
+    } else {
+      let sum = 0;
+      for (let j = 0; j < period; j++) sum += data[i - j].close;
+      out.push({ time: data[i].time, value: sum / period });
+    }
+  }
+  return out;
+}
+
 let OHLCV_CHART = null;
-let OHLCV_VOL_SERIES = null;
-let OHLCV_CANDLE_SERIES = null;
 
 async function renderOHLCVChart(ticker) {
   await loadOHLCVData();
 
-  // Remove any previous block so clicks don't stack
   document.getElementById('ohlcvBlock')?.remove();
   if (OHLCV_CHART) { OHLCV_CHART.remove(); OHLCV_CHART = null; }
 
@@ -3037,13 +3539,15 @@ async function renderOHLCVChart(ticker) {
   `;
 
   container.insertAdjacentHTML('beforebegin',
-    `<div id="ohlcvBlock" class="card" style="margin-bottom:16px;">
-       <h3>Price chart <small>${ticker} · full history</small></h3>
+    `<div id="ohlcvBlock" class="card" style="margin-bottom:16px; position:relative;">
+       <h3>Price chart <small>${ticker} · SMA 50 / SMA 200 · hover for OHLC + MA values</small></h3>
        <div id="ohlcvChartHost" style="width:100%; height:420px;"></div>
+       <div id="ohlcvTooltip" style="position:absolute; display:none; padding:8px 12px; background:var(--panel); border:1px solid var(--border); border-radius:6px; font-family:var(--font-mono); font-size:11px; pointer-events:none; z-index:10; box-shadow:0 4px 12px rgba(0,0,0,.35); line-height:1.5;"></div>
        ${metricsHtml}
      </div>`);
 
   const host = document.getElementById('ohlcvChartHost');
+  const tooltip = document.getElementById('ohlcvTooltip');
   const upColor = cssVar('--up') || '#2FD4B4';
   const downColor = cssVar('--down') || '#F2685C';
   const textColor = cssVar('--muted') || '#8A93A1';
@@ -3065,6 +3569,20 @@ async function renderOHLCVChart(ticker) {
   });
   candleSeries.setData(history.map(p => ({ time: p.date, open: p.open, high: p.high, low: p.low, close: p.close })));
 
+  // SMA 50 overlay
+  const sma50Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 50);
+  const sma50Series = chart.addLineSeries({
+    color: '#E8B64A', lineWidth: 1.4, title: 'SMA 50', priceLineVisible: false, lastValueVisible: true,
+  });
+  sma50Series.setData(sma50Data);
+
+  // SMA 200 overlay
+  const sma200Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 200);
+  const sma200Series = chart.addLineSeries({
+    color: '#4C9BE8', lineWidth: 1.4, title: 'SMA 200', priceLineVisible: false, lastValueVisible: true,
+  });
+  sma200Series.setData(sma200Data);
+
   const volSeries = chart.addHistogramSeries({
     priceFormat: { type: 'volume' },
     priceScaleId: 'vol',
@@ -3077,14 +3595,52 @@ async function renderOHLCVChart(ticker) {
 
   chart.timeScale().fitContent();
 
+  // Crosshair tooltip: OHLC + volume + SMA50 + SMA200
+  chart.subscribeCrosshairMove(param => {
+    if (param.point === undefined || !param.time || param.point.x < 0 || param.point.y < 0) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    const data = param.seriesData.get(candleSeries);
+    if (!data) { tooltip.style.display = 'none'; return; }
+
+    const volData = param.seriesData.get(volSeries);
+    const sma50Val = param.seriesData.get(sma50Series)?.value;
+    const sma200Val = param.seriesData.get(sma200Series)?.value;
+
+    // Handle different time formats from lightweight-charts
+    let dateStr = '';
+    const t = param.time;
+    if (typeof t === 'string') {
+      dateStr = new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    } else if (typeof t === 'object' && t.year) {
+      dateStr = new Date(t.year, t.month - 1, t.day).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    } else if (typeof t === 'number') {
+      dateStr = new Date(t * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = `
+      <div style="font-weight:600; margin-bottom:4px; color:var(--text);">${dateStr}</div>
+      <div>O <span style="color:var(--text);">${data.open.toFixed(2)}</span> · H <span style="color:var(--up);">${data.high.toFixed(2)}</span></div>
+      <div>L <span style="color:var(--down);">${data.low.toFixed(2)}</span> · C <span style="color:var(--text); font-weight:600;">${data.close.toFixed(2)}</span></div>
+      <div>Vol <span style="color:var(--muted);">${((volData?.value ?? 0) / 1e6).toFixed(2)}M</span></div>
+      ${sma50Val !== undefined && sma50Val !== null ? `<div>SMA50 <span style="color:#E8B64A; font-weight:600;">${sma50Val.toFixed(2)}</span></div>` : ''}
+      ${sma200Val !== undefined && sma200Val !== null ? `<div>SMA200 <span style="color:#4C9BE8; font-weight:600;">${sma200Val.toFixed(2)}</span></div>` : ''}
+    `;
+
+    const tooltipWidth = tooltip.offsetWidth;
+    const chartWidth = host.clientWidth;
+    let leftPos = param.point.x + 15;
+    if (leftPos + tooltipWidth > chartWidth) leftPos = param.point.x - tooltipWidth - 15;
+    tooltip.style.left = Math.max(0, leftPos) + 'px';
+    tooltip.style.top = Math.max(10, param.point.y - 90) + 'px';
+  });
+
   OHLCV_CHART = chart;
-  OHLCV_CANDLE_SERIES = candleSeries;
-  OHLCV_VOL_SERIES = volSeries;
 
   const resizeObs = new ResizeObserver(entries => {
-    for (const entry of entries) {
-      chart.applyOptions({ width: entry.contentRect.width });
-    }
+    for (const entry of entries) chart.applyOptions({ width: entry.contentRect.width });
   });
   resizeObs.observe(host);
 }
