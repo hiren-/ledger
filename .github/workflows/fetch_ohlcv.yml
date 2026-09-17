@@ -21,7 +21,7 @@ jobs:
         run: pip install pandas tvkit
 
       - name: Run tvkit fetch
-        run: python tvkit_eg.py
+        run: python fetch_tvkit.py
 
       - name: Commit and push
         run: |
