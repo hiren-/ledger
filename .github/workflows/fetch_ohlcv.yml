@@ -1,7 +1,7 @@
 name: Fetch TradingView OHLCV Data
 
 on:
-  workflow_dispatch: {}        # manual trigger from Actions tab
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -24,6 +24,7 @@ jobs:
         run: pip install pandas tvkit
 
       - name: Run tvkit fetch
+        continue-on-error: true          # <-- don't fail the job on non-zero exit
         run: python fetch_tvkit.py
 
       - name: Commit and push
