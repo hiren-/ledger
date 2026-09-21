@@ -431,7 +431,7 @@
   .radar-shape .rs-desc b{ color:var(--text); }
 
   /* ============================================================
-     TODAY TAB — quick entry decisions (UPGRADED)
+     TODAY TAB — quick entry decisions
   ============================================================ */
   .regime-banner{
     padding:16px 22px;
@@ -560,7 +560,6 @@
   .tc-verdict.wait{ background:color-mix(in srgb, var(--amber) 22%, transparent); color:var(--amber); }
   .tc-verdict.avoid{ background:color-mix(in srgb, var(--down) 22%, transparent); color:var(--down); }
 
-  /* NEW: conviction header block */
   .tc-conviction-block {
     display:flex;
     align-items:center;
@@ -710,6 +709,249 @@
     line-height:1.6;
   }
 
+  /* ============================================================
+     SETUP ROOM — Coiled Spring cards
+  ============================================================ */
+  .today-section-badge.setup {
+    background: color-mix(in srgb, var(--violet) 18%, transparent);
+    color: var(--violet);
+  }
+
+  .setup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 14px;
+  }
+
+  .setup-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    cursor: pointer;
+    transition: border-color .15s, transform .12s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .setup-card:hover { border-color: var(--violet); transform: translateY(-2px); }
+  .setup-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--violet));
+  }
+  .setup-card.loaded::before { background: linear-gradient(90deg, var(--teal), var(--amber)); }
+  .setup-card.fire::before   { background: linear-gradient(90deg, var(--up), var(--amber)); }
+
+  .setup-head {
+    padding: 14px 18px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .setup-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .setup-sym {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .setup-css { text-align: right; flex: 0 0 auto; }
+  .setup-css-v {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .setup-css-v.loaded  { color: var(--teal); }
+  .setup-css-v.coiling { color: var(--amber); }
+  .setup-css-v.early   { color: var(--violet); }
+  .setup-css-v.fire    { color: var(--up); }
+  .setup-css-l {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-top: 2px;
+  }
+
+  .dtt-chip {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--amber) 20%, transparent);
+    color: var(--amber);
+    margin-top: 6px;
+  }
+  .dtt-chip.near {
+    background: color-mix(in srgb, var(--teal) 22%, transparent);
+    color: var(--teal);
+  }
+
+  .coil-gauge {
+    padding: 4px 18px 14px;
+    display: grid;
+    grid-template-columns: 90px 1fr 62px;
+    gap: 8px 10px;
+    align-items: center;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+  .coil-gauge .cg-label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: 9.5px;
+  }
+  .coil-gauge .cg-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--panel-2);
+    overflow: hidden;
+  }
+  .coil-gauge .cg-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--violet), var(--teal));
+    transition: width .3s;
+  }
+  .coil-gauge .cg-fill.warn { background: linear-gradient(90deg, var(--coral), var(--amber)); }
+  .coil-gauge .cg-val {
+    color: var(--text);
+    font-weight: 600;
+    text-align: right;
+    font-size: 10.5px;
+  }
+
+  .setup-levels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--panel-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .setup-level {
+    padding: 10px 8px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .setup-level:last-child { border-right: none; }
+  .setup-level .sl-l {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-family: var(--font-body);
+  }
+  .setup-level .sl-v {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .setup-level .sl-v.highlight { color: var(--violet); }
+  .setup-level .sl-v.up { color: var(--up); }
+  .setup-level .sl-v.down { color: var(--down); }
+
+  .setup-trigger {
+    padding: 10px 18px;
+    background: color-mix(in srgb, var(--violet) 10%, transparent);
+    border-left: 3px solid var(--violet);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .setup-trigger b { color: var(--violet); }
+
+  .setup-why {
+    padding: 12px 18px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  .setup-why b { color: var(--text); font-weight: 600; }
+  .setup-why .pill-inline {
+    display: inline-block;
+    background: color-mix(in srgb, var(--teal) 14%, transparent);
+    color: var(--teal);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    margin: 0 4px 3px 0;
+    font-weight: 600;
+  }
+  .setup-why .pill-inline.violet {
+    background: color-mix(in srgb, var(--violet) 16%, transparent);
+    color: var(--violet);
+  }
+  .setup-why .pill-inline.amber {
+    background: color-mix(in srgb, var(--amber) 16%, transparent);
+    color: var(--amber);
+  }
+
+  .setup-phase {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .setup-phase.fire    { background: var(--up); color: #04120F; }
+  .setup-phase.waking  { background: color-mix(in srgb, var(--amber) 25%, transparent); color: var(--amber); }
+  .setup-phase.near    { background: color-mix(in srgb, var(--violet) 20%, transparent); color: var(--violet); }
+  .setup-phase.coiling { background: color-mix(in srgb, var(--blue) 22%, transparent); color: var(--blue); }
+  .setup-phase.forming { background: color-mix(in srgb, var(--muted) 20%, transparent); color: var(--muted); }
+
+  .setup-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .setup-filter {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .setup-filter:hover { color: var(--text); border-color: var(--violet); }
+  .setup-filter.active {
+    background: color-mix(in srgb, var(--violet) 18%, transparent);
+    color: var(--violet);
+    border-color: var(--violet);
+  }
+  .setup-filter span.count {
+    color: var(--faint);
+    font-weight: 400;
+    font-family: var(--font-mono);
+    margin-left: 4px;
+  }
+
   footer{text-align:center; color:var(--faint); font-size:11.5px; padding:30px 0 10px; font-family:var(--font-mono);}
   .hidden{display:none !important;}
   canvas{max-width:100%;}
@@ -763,8 +1005,8 @@
     <!-- ================= TODAY ================= -->
     <div class="tab-panel active" id="tab-today">
       <div class="help-panel">
-        <div class="hp-title"><span class="help-icon big">?</span> Today — conviction-scored entry decisions</div>
-        The Today tab now uses a <b>two-stage conviction engine</b>: first it checks the market &amp; sector regime, then it scores every stock on <b>five pillars</b> — Trend, Momentum (incl. relative strength vs the universe), Volume, Volatility setup, and Fundamentals. The result is a single <b>0–100 conviction score</b>. <b>BUY</b> requires a bullish regime + conviction ≥ 75 + zero red flags. <b>WAIT</b> means a good setup that needs a specific trigger. <b>AVOID</b> means two or more red flags, or conviction below 40. Entry, Stop, Target, and R:R are shown in rupees on every card.
+        <div class="hp-title"><span class="help-icon big">?</span> Today — conviction + coiled springs</div>
+        The Today tab uses a <b>two-stage model</b>: it reads the market regime, then scores each stock on five pillars (Trend, Momentum, Volume, Volatility setup, Fundamentals) to produce a 0–100 conviction score. <b>BUY</b> requires a bullish regime + conviction ≥ 75 + zero red flags. <b>WAIT</b> means a good setup needing a trigger. <b>AVOID</b> means two or more red flags. And now, the new <b>🎯 SETUPS</b> section surfaces the highest-quality asymmetric entries: <i>strong stocks that have gone quiet and compressed</i> just below a pivot. These are the setups that appear <b>before</b> the BUY list — leaders resting, not broken. Watch them. Enter only when the trigger fires.
       </div>
 
       <div class="regime-banner" id="regimeBanner"></div>
@@ -776,6 +1018,24 @@
         </h2>
         <div class="today-grid" id="buyNowGrid"></div>
       </div>
+
+      <!-- ============ SETUP ROOM ============ -->
+      <div class="today-section" id="setupSection">
+        <h2 class="today-section-title">
+          <span class="today-section-badge setup">🎯 SETUPS — coiled springs</span>
+          <small id="setupCount">—</small>
+          <span style="font-size:11px; color:var(--muted); font-weight:400; margin-left:auto; font-family:var(--font-mono);">
+            strong · compressed · near pivot
+          </span>
+        </h2>
+        <div class="help-panel" style="margin-bottom:14px;">
+          <div class="hp-title"><span class="help-icon big">?</span> What is a "coiled spring"?</div>
+          A stock in a <b>confirmed uptrend</b> (above 200-DMA, golden cross) that has <b>compressed</b> — Bollinger width in the bottom quintile, volume drying up, price consolidating just below its pivot. These setups <i>precede</i> the BUY list. The <b>Coiled Spring Score (CSS)</b> combines compression (30), pivot proximity (20), volume dry-up (15), trend integrity (20) and relative-strength leadership (15). <b>Watch — don't chase.</b> Enter only when the trigger fires.
+        </div>
+        <div class="setup-filters" id="setupFilters"></div>
+        <div class="setup-grid" id="setupGrid"></div>
+      </div>
+      <!-- ============ END SETUP ROOM ============ -->
 
       <div class="today-section">
         <h2 class="today-section-title">
@@ -1102,6 +1362,30 @@
             <div class="def-body">Piotroski F-Score ≥ 7 and Altman Safe zone. A clean floor so you're never buying a technical setup in a broken business.</div>
           </div>
 
+          <h3>🎯 Setups — the Coiled Spring engine</h3>
+          <p>A <b>coiled spring</b> is a stock in a confirmed uptrend that has compressed — a strong leader resting quietly just below a pivot. These setups precede the BUY list by days or weeks. The <b>Coiled Spring Score (CSS)</b> is built from five signals:</p>
+          <ul>
+            <li><b>Compression (30 pts)</b> — Bollinger Band width in the bottom quintile plus ATR% in the bottom quartile.</li>
+            <li><b>Proximity (20 pts)</b> — distance from the 52-week high. Within 3% scores highest.</li>
+            <li><b>Volume Dry-Up (15 pts)</b> — 30-day average volume divided by 90-day average. Below 0.65× is the tightest.</li>
+            <li><b>Integrity (20 pts)</b> — price holding above SMA50, RSI in the 40–62 "resting" zone, trend alignment ≥ 3.</li>
+            <li><b>Leadership (15 pts)</b> — percentile rank of 6M and 1Y performance across the universe.</li>
+          </ul>
+          <p>Only stocks that are <b>above SMA200 AND have the 50/200 golden cross</b> qualify — the gate prevents the engine from flagging weak stocks that merely look quiet.</p>
+
+          <h3>Phase badges</h3>
+          <ul>
+            <li><b>About to Fire</b> — within 1.5% of pivot AND volume surging. Watch it on the tape today.</li>
+            <li><b>Waking Up</b> — within 3% of pivot AND (bullish MACD or above-average volume). The setup is turning.</li>
+            <li><b>Near Pivot</b> — within 5% of pivot. Getting close.</li>
+            <li><b>Coiling Tightly</b> — CSS ≥ 70 but not yet near pivot. Patience.</li>
+            <li><b>Forming Base</b> — everything else. Watch the multi-week chart.</li>
+          </ul>
+
+          <div class="callout good">
+            <b>How to use Setups:</b> Add the trigger price to your alerts. Wait. When it fires with volume, the Setups card becomes a BUY card the following session. Never buy before the pivot breaks — the whole point is that you don't know which direction the range resolves.
+          </div>
+
           <h3>Three verdicts</h3>
           <div class="def">
             <div class="def-term">BUY <span class="tag">go now</span></div>
@@ -1132,10 +1416,6 @@
             <li><b>Quiet</b> (grey) — range-bound, no rush.</li>
             <li><b>Weak</b> (red) — falling, not actionable.</li>
           </ul>
-
-          <div class="callout good">
-            <b>How to use this tab:</b> Check the regime banner. If Defensive, close the tab. If bullish, scan the BUY list, pick one you like, check the conviction score and R:R. If R:R ≥ 2, place limit + stop + target orders. Done. Don't check the price for a week.
-          </div>
 
           <div class="callout warn">
             <b>What the Today tab does NOT do:</b> predict the future. It doesn't know about earnings, news, or analyst changes. It tells you whether the setup is technically and fundamentally clean enough to enter right now.
@@ -1478,7 +1758,11 @@ const BENCH = {
   perf3M: null,
   perf6M: null,
   perf1Y: null,
+  bbWidthP10: null,
   bbWidthP20: null,
+  bbWidthP33: null,
+  atrP25: null,
+  atrP50: null,
 };
 
 const TAB_LABELS = {
@@ -1627,8 +1911,44 @@ function computeBenchmarks(){
   BENCH.perf3M = median(RAW.map(r => r.Perf_3M).filter(v => v !== null));
   BENCH.perf6M = median(RAW.map(r => r.Perf_6M).filter(v => v !== null));
   BENCH.perf1Y = median(RAW.map(r => r.Perf_1Y).filter(v => v !== null));
+
   const bb = RAW.map(r => r['BB_Width_%']).filter(v => v !== null).sort((a,b) => a-b);
-  BENCH.bbWidthP20 = bb.length ? bb[Math.floor(bb.length * 0.2)] : null;
+  BENCH.bbWidthP10 = bb.length ? bb[Math.floor(bb.length * 0.10)] : null;
+  BENCH.bbWidthP20 = bb.length ? bb[Math.floor(bb.length * 0.20)] : null;
+  BENCH.bbWidthP33 = bb.length ? bb[Math.floor(bb.length * 0.33)] : null;
+
+  const atrs = RAW.map(r => r['ATR_%']).filter(v => v !== null).sort((a,b) => a-b);
+  BENCH.atrP25 = atrs.length ? atrs[Math.floor(atrs.length * 0.25)] : null;
+  BENCH.atrP50 = atrs.length ? atrs[Math.floor(atrs.length * 0.50)] : null;
+
+  computePercentileRanks();
+}
+
+/* Percentile ranks — used by the Coiled Spring engine for RS leadership */
+function computePercentileRanks(){
+  const fieldMap = {
+    Perf_1M:      '__rank_p1m',
+    Perf_3M:      '__rank_p3m',
+    Perf_6M:      '__rank_p6m',
+    Perf_1Y:      '__rank_p1y',
+    'BB_Width_%': '__rank_bbw',
+    'ATR_%':      '__rank_atr',
+  };
+  Object.entries(fieldMap).forEach(([field, key]) => {
+    const vals = RAW.map(r => r[field]).filter(v => v !== null).sort((a,b) => a-b);
+    if (!vals.length) return;
+    RAW.forEach(r => {
+      const v = r[field];
+      if (v === null) { r[key] = null; return; }
+      let lo = 0, hi = vals.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (vals[mid] < v) lo = mid + 1;
+        else hi = mid;
+      }
+      r[key] = Math.round(100 * lo / vals.length);
+    });
+  });
 }
 
 function normalizeRow(r){
@@ -1948,7 +2268,7 @@ function computeConviction(r){
   // MOMENTUM (25 max)
   const rs3 = rs3M(r), rs6 = rs6M(r);
   if (rs3 !== null && rs3 > 0)  pillars.momentum += 8;
-  if (rs3 !== null && rs3 > 5)  pillars.momentum += 2; // extra for strong outperform
+  if (rs3 !== null && rs3 > 5)  pillars.momentum += 2;
   if (rs6 !== null && rs6 > 0)  pillars.momentum += 7;
   if (r.RSI !== null && r.RSI >= 45 && r.RSI <= 68) pillars.momentum += 5;
   if (r.MACD_Cross && String(r.MACD_Cross).toLowerCase().includes('bull')) pillars.momentum += 3;
@@ -2008,19 +2328,16 @@ function computeChecks(r){
 function computeVerdict(conviction, redFlags, r, regime){
   const flagCount = redFlags.length;
 
-  // Hard stop rules
   if (flagCount >= 2) return 'AVOID';
   if (conviction.total < 40) return 'AVOID';
 
   const rsiOk = r.RSI === null || (r.RSI >= 35 && r.RSI <= 72);
 
-  // BUY gate: bullish regime + high conviction + clean + RSI ok
   if (regime.cls === 'bull' &&
       conviction.total >= 75 &&
       flagCount === 0 &&
       rsiOk) return 'BUY';
 
-  // WAIT: decent setup needing a trigger
   if (conviction.total >= 55) return 'WAIT';
 
   return 'AVOID';
@@ -2048,7 +2365,6 @@ function computeTrigger(r){
   const close = r.Close;
   if (!close) return null;
 
-  // Squeeze breakout — highest conviction trigger
   if (isSqueeze(r)) {
     const trig = close * 1.015;
     return { text: `Squeeze setup — buy on breakout above ₹${trig.toFixed(0)} with volume ≥ 1.5× avg` };
@@ -2136,6 +2452,144 @@ function pillarClass(pv, max){
   return 'bad';
 }
 
+/* ============================================================
+   COILED SPRING ENGINE — strong stocks, compressed, near pivot
+============================================================ */
+
+/* Position of a stock inside its base — used for phase classification */
+function computeSetupPhase(r, cs, levels) {
+  if (!cs || !levels) return { label: 'Forming Base', cls: 'forming' };
+  const vRatio = r.Volume_Ratio_30D;
+  const dtt = levels.distToPivot;
+  const macdBull = (r.MACD_Cross || '').toLowerCase().includes('bull');
+
+  if (dtt <= 1.5 && vRatio !== null && vRatio >= 1.3) return { label: 'About to Fire', cls: 'fire' };
+  if (dtt <= 3 && (macdBull || (vRatio !== null && vRatio >= 1.1))) return { label: 'Waking Up', cls: 'waking' };
+  if (dtt <= 5) return { label: 'Near Pivot', cls: 'near' };
+  if (cs.total >= 70) return { label: 'Coiling Tightly', cls: 'coiling' };
+  return { label: 'Forming Base', cls: 'forming' };
+}
+
+/* Coiled Spring Score — 0 to 100, five weighted signals */
+function computeCoiledSpring(r){
+  // --- GATE: is this a strong stock at all? ---
+  const strongTrend = r.Above_SMA200 === 'YES' && r.Golden_Cross_50_200 === 'YES';
+  const positive6M  = r.Perf_6M === null || r.Perf_6M > -3;
+  const positive1Y  = r.Perf_1Y === null || r.Perf_1Y > 0;
+  if (!strongTrend || !positive6M || !positive1Y) return null;
+
+  const parts = { compression: 0, proximity: 0, dryUp: 0, integrity: 0, leadership: 0 };
+
+  // 1. COMPRESSION (30 pts) — BB width + ATR
+  const bbw = r['BB_Width_%'];
+  if (bbw !== null && BENCH.bbWidthP10 !== null) {
+    if (bbw <= BENCH.bbWidthP10) parts.compression += 18;
+    else if (bbw <= BENCH.bbWidthP20) parts.compression += 13;
+    else if (bbw <= BENCH.bbWidthP33) parts.compression += 7;
+  }
+  const atr = r['ATR_%'];
+  if (atr !== null && BENCH.atrP25 !== null) {
+    if (atr <= BENCH.atrP25) parts.compression += 12;
+    else if (atr <= BENCH.atrP50) parts.compression += 6;
+  }
+
+  // 2. PROXIMITY (20 pts) — how close to the pivot
+  const distHigh = r.Distance_from_52W_High_% !== null ? Math.abs(r.Distance_from_52W_High_%) : null;
+  if (distHigh !== null) {
+    if (distHigh <= 3)  parts.proximity += 20;
+    else if (distHigh <= 6)  parts.proximity += 17;
+    else if (distHigh <= 10) parts.proximity += 12;
+    else if (distHigh <= 15) parts.proximity += 7;
+    else if (distHigh <= 22) parts.proximity += 3;
+  }
+
+  // 3. VOLUME DRY-UP (15 pts) — 30D avg vs 90D avg
+  let vduRatio = null;
+  if (r.Avg_Volume_30D !== null && r.Avg_Volume_90D !== null && r.Avg_Volume_90D > 0) {
+    vduRatio = r.Avg_Volume_30D / r.Avg_Volume_90D;
+    if (vduRatio < 0.65) parts.dryUp += 15;
+    else if (vduRatio < 0.80) parts.dryUp += 11;
+    else if (vduRatio < 0.95) parts.dryUp += 6;
+  }
+
+  // 4. INTEGRITY (20 pts) — holding above MA50, RSI in the "resting" zone
+  if (r.Above_SMA50 === 'YES') parts.integrity += 8;
+  if (r.RSI !== null && r.RSI >= 40 && r.RSI <= 62) parts.integrity += 7;
+  else if (r.RSI !== null && r.RSI >= 35 && r.RSI <= 70) parts.integrity += 3;
+  if (r.Trend_Alignment_0to4 !== null && r.Trend_Alignment_0to4 >= 3) parts.integrity += 5;
+
+  // 5. LEADERSHIP (15 pts) — relative-strength percentile ranks
+  const r6 = r.__rank_p6m, r1 = r.__rank_p1y;
+  if (r6 !== null && r6 >= 80) parts.leadership += 8;
+  else if (r6 !== null && r6 >= 60) parts.leadership += 5;
+  else if (r6 !== null && r6 >= 40) parts.leadership += 2;
+  if (r1 !== null && r1 >= 80) parts.leadership += 7;
+  else if (r1 !== null && r1 >= 60) parts.leadership += 4;
+
+  const total = parts.compression + parts.proximity + parts.dryUp + parts.integrity + parts.leadership;
+  return { total, parts, vduRatio, distToPivot: distHigh, bbw, atr };
+}
+
+/* Detect quiet accumulation: high 6M RS, flat 1M, volume dry-up */
+function computeQuietAccumulation(r){
+  const rs6 = rs6M(r);
+  const p1m = r.Perf_1M;
+  const distHigh = r.Distance_from_52W_High_% !== null ? Math.abs(r.Distance_from_52W_High_%) : null;
+  if (rs6 === null || rs6 < 8) return false;
+  if (p1m === null || p1m > 3 || p1m < -12) return false;
+  if (distHigh !== null && distHigh > 20) return false;
+  if (r.Avg_Volume_30D !== null && r.Avg_Volume_90D !== null && r.Avg_Volume_90D > 0) {
+    return (r.Avg_Volume_30D / r.Avg_Volume_90D) < 0.85;
+  }
+  return false;
+}
+
+/* Setup levels — pivot, trigger, stop, target, R:R */
+function computeSetupLevels(r){
+  const close = r.Close;
+  const high  = r.High_52W;
+  if (!close || !high) return null;
+  const pivot   = high;
+  const trigger = pivot * 1.005;
+  const distToPivot = ((pivot - close) / close) * 100;
+  const atrPct = r['ATR_%'] !== null ? r['ATR_%'] : 3;
+  const stop   = close * (1 - Math.max(atrPct * 2.5, 6) / 100);
+  const target = trigger * 1.15;
+  const risk   = trigger - stop;
+  const reward = target - trigger;
+  const rr = risk > 0 ? reward / risk : 0;
+  return { pivot, trigger, stop, target, distToPivot, rr };
+}
+
+function classifyCoilTier(score){
+  if (score >= 75) return { label: 'Loaded Spring', cls: 'loaded' };
+  if (score >= 60) return { label: 'Coiling',       cls: 'coiling' };
+  if (score >= 45) return { label: 'Early Base',    cls: 'early' };
+  return { label: 'Forming', cls: '' };
+}
+
+function buildSetupWhy(r, cs){
+  const reasons = [];
+  if (cs.parts.compression >= 20) reasons.push('volatility compressed to bottom quintile');
+  if (cs.parts.dryUp >= 11 && cs.vduRatio !== null)
+    reasons.push(`volume drying up (${((cs.vduRatio - 1) * 100).toFixed(0)}% vs 90D avg)`);
+  if (cs.distToPivot !== null && cs.distToPivot <= 6)
+    reasons.push(`${cs.distToPivot.toFixed(1)}% from pivot`);
+  if (cs.parts.integrity >= 15) reasons.push('all MAs aligned, holding firmly');
+  if (cs.parts.leadership >= 10) reasons.push('relative-strength leader');
+
+  const tags = [];
+  if (computeQuietAccumulation(r)) tags.push({ label: 'Quiet Accumulation', cls: 'violet' });
+  if (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 7)
+    tags.push({ label: `F-Score ${r.Piotroski_F_Score}`, cls: '' });
+  if (r.EBITDA_Growth_YoY_TTM !== null && r.EBITDA_Growth_YoY_FY !== null
+      && r.EBITDA_Growth_YoY_TTM > r.EBITDA_Growth_YoY_FY)
+    tags.push({ label: 'TTM Accel', cls: 'amber' });
+  if ((r.Altman_Zone || '').toLowerCase() === 'safe') tags.push({ label: 'Altman Safe', cls: '' });
+
+  return { reasons, tags };
+}
+
 function renderToday(){
   if (!RAW.length) return;
 
@@ -2151,7 +2605,14 @@ function renderToday(){
     const positionSize = computePositionSize(r);
     const checks = computeChecks(r);
     const rs = rs3M(r);
-    return { r, redFlags, conviction, verdict, levels, trigger, freshness, positionSize, checks, rs };
+
+    // Coiled Spring engine (independent of conviction)
+    const coiledSpring = computeCoiledSpring(r);
+    const setupLevels  = coiledSpring ? computeSetupLevels(r) : null;
+    const setupPhase   = coiledSpring ? computeSetupPhase(r, coiledSpring, setupLevels) : null;
+
+    return { r, redFlags, conviction, verdict, levels, trigger, freshness,
+             positionSize, checks, rs, coiledSpring, setupLevels, setupPhase };
   });
 
   const buys = scored.filter(x => x.verdict === 'BUY')
@@ -2162,7 +2623,15 @@ function renderToday(){
     })
     .slice(0, 12);
 
-  const waits = scored.filter(x => x.verdict === 'WAIT')
+  // Strong setups move to the Setup Room — keep WAIT list clean
+  const setupSymbols = new Set(
+    scored
+      .filter(x => x.coiledSpring && x.coiledSpring.total >= 60)
+      .map(x => x.r.symbol)
+  );
+
+  const waits = scored
+    .filter(x => x.verdict === 'WAIT' && !setupSymbols.has(x.r.symbol))
     .sort((a, b) => b.conviction.total - a.conviction.total)
     .slice(0, 24);
 
@@ -2187,11 +2656,14 @@ function renderToday(){
   }
 
   renderTodaySection('buyNowGrid', buys, 'buy');
+  renderSetupRoom(scored);
   renderTodaySection('waitGrid', waits, 'wait');
   renderTodaySection('avoidGrid', avoids, 'avoid');
 
   document.getElementById('buyNowCount').textContent = buys.length + ' stock' + (buys.length === 1 ? '' : 's');
-  document.getElementById('waitCount').textContent = waits.length + ' stock' + (waits.length === 1 ? '' : 's');
+  document.getElementById('waitCount').textContent =
+    waits.length + ' stock' + (waits.length === 1 ? '' : 's') +
+    (setupSymbols.size ? ` · ${setupSymbols.size} moved to Setups` : '');
   document.getElementById('avoidCount').textContent = avoids.length + ' stock' + (avoids.length === 1 ? '' : 's');
 }
 
@@ -2200,9 +2672,9 @@ function renderTodaySection(gridId, items, kind){
   if (!el) return;
   if (!items.length) {
     const msg = kind === 'buy'
-      ? 'No clear buys right now. Check the WAIT list for setups close to triggering.'
+      ? 'No clear buys right now. Check the Setup Room and WAIT list for setups close to triggering.'
       : kind === 'wait'
-        ? 'Nothing on the waitlist. The BUY list above is where the action is.'
+        ? 'Nothing on the waitlist. The BUY list and Setup Room above are where the action is.'
         : 'No severe red flags in the universe right now.';
     el.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">${msg}</div>`;
     return;
@@ -2290,6 +2762,150 @@ document.getElementById('toggleAvoid')?.addEventListener('click', (e) => {
   grid.classList.toggle('hidden');
   btn.textContent = grid.classList.contains('hidden') ? 'Show' : 'Hide';
 });
+
+/* ============================================================
+   SETUP ROOM RENDERER
+============================================================ */
+let currentSetupFilter = 'all';
+
+const SETUP_FILTERS = {
+  all:    { label: 'All Setups',               test: x => true },
+  fire:   { label: '🔥 About to Fire',         test: x => x.setupPhase.cls === 'fire' || x.setupPhase.cls === 'waking' },
+  loaded: { label: '⚡ Loaded (75+)',          test: x => x.coiledSpring.total >= 75 },
+  near:   { label: '🎯 Near Pivot (≤5%)',     test: x => x.setupLevels && x.setupLevels.distToPivot <= 5 },
+  quiet:  { label: '🤫 Quiet Accumulation',    test: x => computeQuietAccumulation(x.r) },
+  clean:  { label: '🛡 Clean Books',           test: x => (x.r.Piotroski_F_Score ?? 0) >= 7 && (x.r.Altman_Zone || '').toLowerCase() === 'safe' },
+};
+
+function renderSetupRoom(scored){
+  const setups = scored
+    .filter(x => x.coiledSpring && x.coiledSpring.total >= 45)
+    .filter(x => x.verdict !== 'BUY')
+    .filter(x => x.redFlags.length < 2);
+
+  // Priority = CSS blended with phase urgency (so "about to fire" floats up)
+  const phaseWeight = { fire: 100, waking: 75, near: 50, coiling: 30, forming: 15 };
+  setups.forEach(x => {
+    const pw = phaseWeight[x.setupPhase?.cls] || 0;
+    x.__setupPriority = x.coiledSpring.total * 0.65 + pw * 0.35;
+  });
+  setups.sort((a, b) => b.__setupPriority - a.__setupPriority);
+
+  // Filter chips
+  const filterEl = document.getElementById('setupFilters');
+  if (filterEl) {
+    filterEl.innerHTML = Object.entries(SETUP_FILTERS).map(([k, f]) => {
+      const count = setups.filter(f.test).length;
+      const active = currentSetupFilter === k ? 'active' : '';
+      return `<button class="setup-filter ${active}" data-filter="${k}">${f.label}<span class="count">${count}</span></button>`;
+    }).join('');
+    filterEl.querySelectorAll('.setup-filter').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentSetupFilter = btn.dataset.filter;
+        renderSetupRoom(scored);
+      });
+    });
+  }
+
+  const filterFn = SETUP_FILTERS[currentSetupFilter]?.test || (() => true);
+  const finalList = setups.filter(filterFn).slice(0, 18);
+
+  const grid = document.getElementById('setupGrid');
+  if (!grid) return;
+
+  if (!finalList.length) {
+    const msg = currentSetupFilter === 'all'
+      ? 'No coiled springs right now. This section is deliberately quiet in choppy tapes — check back tomorrow.'
+      : 'No setups match this filter. Loosen it or switch back to "All Setups".';
+    grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">${msg}</div>`;
+    const countEl = document.getElementById('setupCount');
+    if (countEl) countEl.textContent = `0 of ${setups.length} setups`;
+    return;
+  }
+  grid.innerHTML = finalList.map(x => buildSetupCard(x)).join('');
+
+  const countEl = document.getElementById('setupCount');
+  if (countEl) countEl.textContent = `${finalList.length} of ${setups.length} setups`;
+}
+
+function buildSetupCard(x){
+  const r  = x.r;
+  const cs = x.coiledSpring;
+  const levels = x.setupLevels;
+  const phase  = x.setupPhase;
+  const tier   = classifyCoilTier(cs.total);
+  const why    = buildSetupWhy(r, cs);
+
+  // Compression gauge — how compressed vs universe (higher = tighter)
+  const bbwPct = (cs.bbw !== null && BENCH.bbWidthP33)
+    ? Math.max(0, Math.min(100, 100 - (cs.bbw / BENCH.bbWidthP33) * 100))
+    : 50;
+
+  // Volume dry-up gauge — lower ratio = higher bar
+  const vduPct = cs.vduRatio !== null
+    ? Math.max(0, Math.min(100, (1 - cs.vduRatio) * 200))
+    : 50;
+
+  // RS gauge — percentile rank
+  const rsRank = r.__rank_p6m ?? 50;
+
+  const rs6Raw = r.Perf_6M;
+  const dtt = levels ? levels.distToPivot : null;
+
+  const tierClass = phase?.cls === 'fire' ? 'fire' : tier.cls;
+
+  return `
+    <div class="setup-card ${tierClass}" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
+      <div class="setup-head">
+        <div style="min-width:0;">
+          <div class="setup-name">${r.name || r.symbol}</div>
+          <div class="setup-sym">${r.exchange}:${r.symbol} · ₹${r.Close != null ? r.Close.toFixed(0) : '—'} · ${r.sector}</div>
+          ${dtt !== null ? `<span class="dtt-chip ${dtt <= 5 ? 'near' : ''}">${dtt.toFixed(1)}% to pivot</span>` : ''}
+        </div>
+        <div class="setup-css">
+          <div class="setup-css-v ${tierClass}">${cs.total}</div>
+          <div class="setup-css-l">${tier.label}</div>
+        </div>
+      </div>
+
+      <div class="coil-gauge">
+        <div class="cg-label">Compression</div>
+        <div class="cg-track"><div class="cg-fill" style="width:${bbwPct}%"></div></div>
+        <div class="cg-val">${cs.bbw !== null ? cs.bbw.toFixed(1) + '%' : '—'}</div>
+
+        <div class="cg-label">Vol. Dry-Up</div>
+        <div class="cg-track"><div class="cg-fill ${cs.vduRatio !== null && cs.vduRatio > 0.9 ? 'warn' : ''}" style="width:${vduPct}%"></div></div>
+        <div class="cg-val">${cs.vduRatio !== null ? (cs.vduRatio >= 1 ? '+' : '') + ((cs.vduRatio - 1) * 100).toFixed(0) + '%' : '—'}</div>
+
+        <div class="cg-label">Rel. Strength</div>
+        <div class="cg-track"><div class="cg-fill" style="width:${rsRank}%"></div></div>
+        <div class="cg-val">${rs6Raw !== null ? (rs6Raw >= 0 ? '+' : '') + rs6Raw.toFixed(1) + '%' : '—'}</div>
+      </div>
+
+      ${levels ? `
+      <div class="setup-levels">
+        <div class="setup-level"><div class="sl-l">Pivot</div><div class="sl-v highlight">₹${levels.pivot.toFixed(0)}</div></div>
+        <div class="setup-level"><div class="sl-l">Trigger</div><div class="sl-v">₹${levels.trigger.toFixed(0)}</div></div>
+        <div class="setup-level"><div class="sl-l">Stop</div><div class="sl-v down">₹${levels.stop.toFixed(0)}</div></div>
+        <div class="setup-level"><div class="sl-l">Target</div><div class="sl-v up">₹${levels.target.toFixed(0)}</div></div>
+      </div>
+
+      <div class="setup-trigger">
+        <b>Trigger:</b> close above ₹${levels.trigger.toFixed(0)} with volume ≥ 1.5× 30-day avg · <b>R:R ${levels.rr.toFixed(1)}</b>
+      </div>
+      ` : ''}
+
+      <div class="setup-why">
+        <span class="setup-phase ${phase.cls}">${phase.label}</span>
+        ${why.tags.map(t => `<span class="pill-inline ${t.cls}">${t.label}</span>`).join('')}
+        <div style="margin-top:8px;">
+          ${why.reasons.length ? why.reasons.map(s => `<b>${s}</b>`).join(' · ') : 'Tight base building — watch for the trigger.'}
+        </div>
+      </div>
+    </div>
+  `;
+}
 
 /* ============================================================
    KPIs
@@ -3569,14 +4185,12 @@ async function renderOHLCVChart(ticker) {
   });
   candleSeries.setData(history.map(p => ({ time: p.date, open: p.open, high: p.high, low: p.low, close: p.close })));
 
-  // SMA 50 overlay
   const sma50Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 50);
   const sma50Series = chart.addLineSeries({
     color: '#E8B64A', lineWidth: 1.4, title: 'SMA 50', priceLineVisible: false, lastValueVisible: true,
   });
   sma50Series.setData(sma50Data);
 
-  // SMA 200 overlay
   const sma200Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 200);
   const sma200Series = chart.addLineSeries({
     color: '#4C9BE8', lineWidth: 1.4, title: 'SMA 200', priceLineVisible: false, lastValueVisible: true,
@@ -3595,7 +4209,6 @@ async function renderOHLCVChart(ticker) {
 
   chart.timeScale().fitContent();
 
-  // Crosshair tooltip: OHLC + volume + SMA50 + SMA200
   chart.subscribeCrosshairMove(param => {
     if (param.point === undefined || !param.time || param.point.x < 0 || param.point.y < 0) {
       tooltip.style.display = 'none';
@@ -3608,7 +4221,6 @@ async function renderOHLCVChart(ticker) {
     const sma50Val = param.seriesData.get(sma50Series)?.value;
     const sma200Val = param.seriesData.get(sma200Series)?.value;
 
-    // Handle different time formats from lightweight-charts
     let dateStr = '';
     const t = param.time;
     if (typeof t === 'string') {
