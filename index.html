@@ -886,7 +886,6 @@ The engine detects <b>Elliott Wave structures</b> from real OHLCV data using ATR
 </div>
 <div class="wave-grid" id="waveGrid"></div>
 </div>
-  
 <!-- ================= OVERVIEW ================= -->
 <div class="tab-panel" id="tab-overview">
 <div class="help-panel">
@@ -1505,6 +1504,9 @@ STATE
 ============================================================ */
 let RAW = [];
 let CHARTS = {};
+const WAVE_CACHE = new Map();
+const GEM_CACHE = new Map();
+const LAZY_TABS = { waves: false, gems: false, springs: false };
 const state = {
 sort: {
 fund:   { key: 'Overall_Score',    dir: -1 },
@@ -1517,7 +1519,6 @@ archetype: 'compounder',
 radarPreset: null,
 returnTab: null,
 };
-/* Universe benchmarks — computed at ingest for relative-strength proxies */
 const BENCH = {
 perf3M: null,
 perf6M: null,
@@ -1529,7 +1530,8 @@ today:'Today',
 springs:'Springs',
 overview:'Overview', fundamentals:'Fundamentals', technicals:'Technicals',
 risk:'Risk & Quality', sector:'Sector View', radar:'Radar Scan',
-search:'Symbol Search', suggestions:'Suggestions', gems:'Hidden Gems', help:'Help & Glossary'
+search:'Symbol Search', suggestions:'Suggestions', gems:'Hidden Gems',
+help:'Help & Glossary', waves:'Wave Analysis'
 };
 /* ============================================================
 THEME
@@ -1650,6 +1652,11 @@ const existing = groups.get(key);
 if (existing.__exch !== 'NSE' && exch === 'NSE') groups.set(key, r);
 });
 RAW = Array.from(groups.values()).map(normalizeRow);
+WAVE_CACHE.clear();
+GEM_CACHE.clear();
+LAZY_TABS.waves = false;
+LAZY_TABS.gems = false;
+LAZY_TABS.springs = false;
 computeBenchmarks();
 document.getElementById('emptyState').classList.add('hidden');
 document.getElementById('appRoot').classList.remove('hidden');
@@ -1870,6 +1877,7 @@ state.returnTab = null;
 updateBackButton();
 setHamburgerLabel((btn.textContent || '').replace(/\s+\d+\s*$/, '').trim());
 closeHamburger();
+maybeLazyRender(btn.dataset.tab);
 });
 document.addEventListener('click', e => {
 if (!tabsWrap?.classList.contains('open')) return;
@@ -1879,6 +1887,18 @@ closeHamburger();
 document.addEventListener('keydown', e => {
 if (e.key === 'Escape') closeHamburger();
 });
+/* Lazy-render hook: if user opens a heavy tab before the deferred auto-run
+   reaches it, kick it off immediately so they don't wait. */
+function maybeLazyRender(tab){
+    if (tab === 'waves' && !LAZY_TABS.waves) {
+        LAZY_TABS.waves = true;
+        renderWaves();
+    }
+    if (tab === 'gems' && !LAZY_TABS.gems) {
+        LAZY_TABS.gems = true;
+        runGemScan();
+    }
+}
 /* ============================================================
 BACK BUTTON
 ============================================================ */
@@ -1904,64 +1924,75 @@ if (active) setHamburgerLabel((active.textContent || '').replace(/\s+\d+\s*$/, '
 }
 document.getElementById('backBtn').addEventListener('click', goBack);
 /* ============================================================
-RENDER ALL
+RENDER ALL — light tabs run synchronously, heavy tabs deferred
 ============================================================ */
 function renderAll(){
-chartDefaults();
-renderToday();
-renderKpis();
-renderOverviewCharts();
-renderFundamentals();
-renderTechnicals();
-renderRisk();
-renderRatingConsensus();
-renderSectorView(true);
-runScreen();
-renderArchetypeGrid();
-runGemScan();
-initRadarScan();
-updateTopbarHeight();
-renderSprings();
-renderWaves();
+    chartDefaults();
+    renderToday();
+    renderKpis();
+    renderOverviewCharts();
+    renderFundamentals();
+    renderTechnicals();
+    renderRisk();
+    renderRatingConsensus();
+    renderSectorView(true);
+    runScreen();
+    renderArchetypeGrid();
+    initRadarScan();
+    updateTopbarHeight();
+
+    // Heavy scans (springs, waves, gems) are deferred so first paint is instant.
+    // Each is chunked internally and yields to the browser.
+    requestAnimationFrame(() => {
+        setTimeout(async () => {
+            // Springs first (also loads OHLCV once, shared by waves)
+            if (!LAZY_TABS.springs) {
+                LAZY_TABS.springs = true;
+                await renderSprings();
+            }
+            // Waves (uses already-loaded OHLCV)
+            if (!LAZY_TABS.waves) {
+                LAZY_TABS.waves = true;
+                await renderWaves();
+            }
+            // Gems (independent of OHLCV)
+            if (!LAZY_TABS.gems) {
+                LAZY_TABS.gems = true;
+                await runGemScan();
+            }
+        }, 0);
+    });
 }
 /* ============================================================
 TODAY TAB — conviction-scored entry decisions
 ============================================================ */
-/* Relative strength vs universe median */
 function rs3M(r){ return (r.Perf_3M === null || BENCH.perf3M === null) ? null : r.Perf_3M - BENCH.perf3M; }
 function rs6M(r){ return (r.Perf_6M === null || BENCH.perf6M === null) ? null : r.Perf_6M - BENCH.perf6M; }
 function rs1Y(r){ return (r.Perf_1Y === null || BENCH.perf1Y === null) ? null : r.Perf_1Y - BENCH.perf1Y; }
-/* Volatility squeeze detection */
 function isSqueeze(r){
 if (r['BB_Width_%'] === null || BENCH.bbWidthP20 === null) return false;
 return r['BB_Width_%'] <= BENCH.bbWidthP20;
 }
-/* Five-pillar conviction score (0–100) */
 function computeConviction(r){
 const pillars = { trend: 0, momentum: 0, volume: 0, volatility: 0, fundamental: 0 };
-// TREND (25 max)
 if (r.Above_SMA50 === 'YES')  pillars.trend += 7;
 if (r.Above_SMA200 === 'YES') pillars.trend += 8;
 if (r.Golden_Cross_20_50 === 'YES')  pillars.trend += 5;
 if (r.Golden_Cross_50_200 === 'YES') pillars.trend += 5;
-// MOMENTUM (25 max)
 const rs3 = rs3M(r), rs6 = rs6M(r);
 if (rs3 !== null && rs3 > 0)  pillars.momentum += 8;
-if (rs3 !== null && rs3 > 5)  pillars.momentum += 2; // extra for strong outperform
+if (rs3 !== null && rs3 > 5)  pillars.momentum += 2;
 if (rs6 !== null && rs6 > 0)  pillars.momentum += 7;
 if (r.RSI !== null && r.RSI >= 45 && r.RSI <= 68) pillars.momentum += 5;
 if (r.MACD_Cross && String(r.MACD_Cross).toLowerCase().includes('bull')) pillars.momentum += 3;
-// VOLUME (20 max)
 if (r.Volume_Ratio_30D !== null){
 if (r.Volume_Ratio_30D >= 1.5) pillars.volume += 20;
 else if (r.Volume_Ratio_30D >= 1.1) pillars.volume += 12;
 else if (r.Volume_Ratio_30D >= 0.9) pillars.volume += 6;
 }
-// VOLATILITY (15 max)
 if (isSqueeze(r)) pillars.volatility += 10;
 if (r.ADX !== null && r.ADX >= 18 && r.ADX <= 30) pillars.volatility += 5;
 else if (r.ADX !== null && r.ADX > 30) pillars.volatility += 3;
-// FUNDAMENTAL (15 max)
 if (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 7) pillars.fundamental += 10;
 else if (r.Piotroski_F_Score !== null && r.Piotroski_F_Score >= 5) pillars.fundamental += 5;
 if ((r.Altman_Zone||'').toLowerCase() === 'safe') pillars.fundamental += 5;
@@ -1999,16 +2030,13 @@ return [
 }
 function computeVerdict(conviction, redFlags, r, regime){
 const flagCount = redFlags.length;
-// Hard stop rules
 if (flagCount >= 2) return 'AVOID';
 if (conviction.total < 40) return 'AVOID';
 const rsiOk = r.RSI === null || (r.RSI >= 35 && r.RSI <= 72);
-// BUY gate: bullish regime + high conviction + clean + RSI ok
 if (regime.cls === 'bull' &&
 conviction.total >= 75 &&
 flagCount === 0 &&
 rsiOk) return 'BUY';
-// WAIT: decent setup needing a trigger
 if (conviction.total >= 55) return 'WAIT';
 return 'AVOID';
 }
@@ -2028,7 +2056,6 @@ return { entry: close, stop, target, rr, stopPct };
 function computeTrigger(r){
 const close = r.Close;
 if (!close) return null;
-// Squeeze breakout — highest conviction trigger
 if (isSqueeze(r)) {
 const trig = close * 1.015;
 return { text: `Squeeze setup — buy on breakout above ₹${trig.toFixed(0)} with volume ≥ 1.5× avg` };
@@ -3260,16 +3287,24 @@ if (opts.altman === 'safe' && z !== 'safe') return false;
 if (opts.altman === 'notdistress' && z === 'distress') return false;
 return true;
 }
+/* --- Memoized gem evaluation (avoids O(N × 12 × 2) blow-up) --- */
 function evaluateGem(r, archetype, bbP20){
-const opts = readGemOpts();
-if (!matchesGemFilters(r, opts)) return null;
-const reasons = archetype.matches(r);
-if (!archetype.pass(r, reasons, bbP20)) return null;
-const ratings = [r.Tech_Rating, r.MA_Rating, r.Oscillator_Rating];
-const allSB = ratings.every(x => x === 'Strong Buy');
-if (allSB && archetype.id !== 'ignition') return null;
-const score = scoreGem(r, reasons, archetype.id);
-return { r, reasons, score };
+    const key = r.symbol + '::' + archetype.id;
+    if (GEM_CACHE.has(key)) return GEM_CACHE.get(key);
+    const opts = readGemOpts();
+    let result = null;
+    if (matchesGemFilters(r, opts)) {
+        const reasons = archetype.matches(r);
+        if (archetype.pass(r, reasons, bbP20)) {
+            const ratings = [r.Tech_Rating, r.MA_Rating, r.Oscillator_Rating];
+            const allSB = ratings.every(x => x === 'Strong Buy');
+            if (!(allSB && archetype.id !== 'ignition')) {
+                result = { r, reasons, score: scoreGem(r, reasons, archetype.id) };
+            }
+        }
+    }
+    GEM_CACHE.set(key, result);
+    return result;
 }
 function readGemOpts(){
 return {
@@ -3300,15 +3335,17 @@ leg.innerHTML = ARCHETYPES.map(a => `
 <span class="lg-dot" style="background:${a.color};"></span>${a.name}
 </div>`).join('');
 }
-document.getElementById('applyGems').addEventListener('click', runGemScan);
+document.getElementById('applyGems').addEventListener('click', () => {
+    // Filters changed — clear memo so the next scan uses the new thresholds
+    GEM_CACHE.clear();
+    runGemScan();
+});
 /* ============================================================
-OHLCV DATA INTEGRATION (lazy load)
+OHLCV DATA INTEGRATION (lazy load — shared promise so springs
+and waves both await the same single fetch)
 ============================================================ */
 let OHLCV_DATA = null;
-let OHLCV_LOADING = false;
-let OHLCV_DATA = null;
 let OHLCV_LOADING_PROMISE = null;
-
 async function loadOHLCVData() {
     if (OHLCV_DATA) return OHLCV_DATA;
     if (OHLCV_LOADING_PROMISE) return OHLCV_LOADING_PROMISE;
@@ -3414,13 +3451,11 @@ upColor, downColor, borderUpColor: upColor, borderDownColor: downColor,
 wickUpColor: upColor, wickDownColor: downColor,
 });
 candleSeries.setData(history.map(p => ({ time: p.date, open: p.open, high: p.high, low: p.low, close: p.close })));
-// SMA 50 overlay
 const sma50Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 50);
 const sma50Series = chart.addLineSeries({
 color: '#E8B64A', lineWidth: 1.4, title: 'SMA 50', priceLineVisible: false, lastValueVisible: true,
 });
 sma50Series.setData(sma50Data);
-// SMA 200 overlay
 const sma200Data = calculateSMA(history.map(p => ({ time: p.date, close: p.close })), 200);
 const sma200Series = chart.addLineSeries({
 color: '#4C9BE8', lineWidth: 1.4, title: 'SMA 200', priceLineVisible: false, lastValueVisible: true,
@@ -3436,7 +3471,6 @@ time: p.date, value: p.volume ?? 0,
 color: p.close >= p.open ? 'rgba(47,212,180,0.5)' : 'rgba(242,104,92,0.5)',
 })));
 chart.timeScale().fitContent();
-// Crosshair tooltip: OHLC + volume + SMA50 + SMA200
 chart.subscribeCrosshairMove(param => {
 if (param.point === undefined || !param.time || param.point.x < 0 || param.point.y < 0) {
 tooltip.style.display = 'none';
@@ -3447,7 +3481,6 @@ if (!data) { tooltip.style.display = 'none'; return; }
 const volData = param.seriesData.get(volSeries);
 const sma50Val = param.seriesData.get(sma50Series)?.value;
 const sma200Val = param.seriesData.get(sma200Series)?.value;
-// Handle different time formats from lightweight-charts
 let dateStr = '';
 const t = param.time;
 if (typeof t === 'string') {
@@ -3480,53 +3513,78 @@ for (const entry of entries) chart.applyOptions({ width: entry.contentRect.width
 resizeObs.observe(host);
 }
 /* ============================================================
-GEM SCAN
+GEM SCAN — chunked & memoized
 ============================================================ */
-function runGemScan(){
-if (!RAW.length) return;
-const archetype = ARCHETYPES.find(a => a.id === state.archetype) || ARCHETYPES[0];
-const bbWidths = RAW.map(r => r['BB_Width_%']).filter(v => v !== null).sort((a,b) => a-b);
-const bbP20 = bbWidths.length ? bbWidths[Math.floor(bbWidths.length * 0.2)] : null;
-const countsByArch = {};
-ARCHETYPES.forEach(a => {
-const count = RAW.map(r => evaluateGem(r, a, bbP20)).filter(Boolean).length;
-countsByArch[a.id] = count;
-const el = document.getElementById('ac-count-' + a.id);
-if (el) el.textContent = count + ' candidate' + (count === 1 ? '' : 's');
-});
-const hits = RAW.map(r => evaluateGem(r, archetype, bbP20))
-.filter(Boolean)
-.sort((a,b) => b.score - a.score)
-.slice(0, 50);
-const multiMap = new Map();
-hits.forEach(h => {
-const others = ARCHETYPES.filter(a => a.id !== archetype.id)
-.filter(a => evaluateGem(h.r, a, bbP20))
-.map(a => a.name);
-multiMap.set(h.r.symbol, others);
-});
-document.getElementById('archetypeTitle').textContent = archetype.name + ' — logic';
-document.getElementById('archetypeHelp').innerHTML =
-`<div class="hp-title"><span class="help-icon big">?</span> ${archetype.name}</div>${archetype.help}<br><br><b>Pass criteria:</b> ${archetype.criteria}`;
-const totalMatched = ARCHETYPES.reduce((acc, a) => acc + countsByArch[a.id], 0);
-document.getElementById('gemSummary').innerHTML =
-`${hits.length} candidate${hits.length===1?'':'s'} in the <b>${archetype.name}</b> archetype ` +
-`(out of ${RAW.length} stocks scanned). Across all 12 archetypes there are ${totalMatched} total matches. ` +
-`Ranked by <b>divergence score</b>.`;
-const grid = document.getElementById('gemGrid');
-if (!hits.length){
-grid.innerHTML = `<div class="card" style="grid-column:1/-1; text-align:center; color:var(--muted); padding:40px;">No candidates for this archetype under the current filters. Loosen a threshold above, or try another archetype.</div>`;
-document.getElementById('gemTabBadge').textContent = '0';
-return;
-}
-grid.innerHTML = hits.map(h => buildGemCard(h.r, archetype, h.reasons, h.score, multiMap.get(h.r.symbol))).join('');
-document.getElementById('gemTabBadge').textContent = hits.length;
+let GEM_RENDERING = false;
+async function runGemScan(){
+    if (!RAW.length || GEM_RENDERING) return;
+    GEM_RENDERING = true;
+
+    const archetype = ARCHETYPES.find(a => a.id === state.archetype) || ARCHETYPES[0];
+    const bbWidths = RAW.map(r => r['BB_Width_%']).filter(v => v !== null).sort((a,b) => a-b);
+    const bbP20 = bbWidths.length ? bbWidths[Math.floor(bbWidths.length * 0.2)] : null;
+
+    const grid = document.getElementById('gemGrid');
+    if (grid) grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">Scanning ${RAW.length} stocks across 12 archetypes…</div>`;
+    await new Promise(res => setTimeout(res, 0));
+
+    // Archetype counts — chunked. Cache makes repeats free.
+    const countsByArch = {};
+    for (let ai = 0; ai < ARCHETYPES.length; ai++) {
+        const a = ARCHETYPES[ai];
+        let count = 0;
+        for (let i = 0; i < RAW.length; i++) {
+            if (evaluateGem(RAW[i], a, bbP20)) count++;
+            if (i % 40 === 39) await new Promise(res => setTimeout(res, 0));
+        }
+        countsByArch[a.id] = count;
+        const el = document.getElementById('ac-count-' + a.id);
+        if (el) el.textContent = count + ' candidate' + (count === 1 ? '' : 's');
+    }
+
+    // Current-archetype hits
+    const hits = [];
+    for (let i = 0; i < RAW.length; i++) {
+        const r = evaluateGem(RAW[i], archetype, bbP20);
+        if (r) hits.push(r);
+        if (i % 40 === 39) await new Promise(res => setTimeout(res, 0));
+    }
+    hits.sort((a,b) => b.score - a.score);
+    const topHits = hits.slice(0, 50);
+
+    // Multi-match map (all cache hits now — near-free)
+    const multiMap = new Map();
+    for (const h of topHits) {
+        const others = ARCHETYPES
+            .filter(a => a.id !== archetype.id)
+            .filter(a => evaluateGem(h.r, a, bbP20))
+            .map(a => a.name);
+        multiMap.set(h.r.symbol, others);
+    }
+
+    document.getElementById('archetypeTitle').textContent = archetype.name + ' — logic';
+    document.getElementById('archetypeHelp').innerHTML =
+        `<div class="hp-title"><span class="help-icon big">?</span> ${archetype.name}</div>${archetype.help}<br><br><b>Pass criteria:</b> ${archetype.criteria}`;
+
+    const totalMatched = ARCHETYPES.reduce((acc, a) => acc + countsByArch[a.id], 0);
+    document.getElementById('gemSummary').innerHTML =
+        `${topHits.length} candidate${topHits.length===1?'':'s'} in the <b>${archetype.name}</b> archetype ` +
+        `(out of ${RAW.length} stocks scanned). Across all 12 archetypes there are ${totalMatched} total matches. ` +
+        `Ranked by <b>divergence score</b>.`;
+
+    if (!topHits.length) {
+        grid.innerHTML = `<div class="card" style="grid-column:1/-1; text-align:center; color:var(--muted); padding:40px;">No candidates for this archetype under the current filters.</div>`;
+        document.getElementById('gemTabBadge').textContent = '0';
+        GEM_RENDERING = false;
+        return;
+    }
+
+    grid.innerHTML = topHits.map(h => buildGemCard(h.r, archetype, h.reasons, h.score, multiMap.get(h.r.symbol))).join('');
+    document.getElementById('gemTabBadge').textContent = topHits.length;
+    GEM_RENDERING = false;
 }
 /* ============================================================
-SPRINGS — compression idea engine (fully additive module)
-Strong stocks that went quiet: VCP contractions, dry-ups,
-shakeout springs, with an exact entry/stop/target plan.
-Falls back to CSV proxies automatically if index.json is absent.
+SPRINGS — compression idea engine
 ============================================================ */
 const SPRING_STATE = { filter:'active', minScore:40, sector:'' };
 const SP_STATE_ORDER = { ignition:0, coiled:1, pullback:2, extended:3 };
@@ -3544,7 +3602,6 @@ return Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/(n-1));
 }
 function spAvg(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; }
 
-/* VCP detection: successive pullback depths between new highs */
 function contractionProfile(closes){
 const segs = []; let peak = -Infinity, curDD = 0, started = false;
 for (let i = 0; i < closes.length; i++){
@@ -3609,7 +3666,6 @@ if (last20[i] > last20[i-1]) upV += v; else if (last20[i] < last20[i-1]) dnV += 
 }
 coil.upDownVol = dnV > 0 ? upV / dnV : null;
 
-/* Wyckoff spring: today swept the base low but closed back above it on volume */
 const priorLow = Math.min(...lows.slice(-21,-1));
 const vAvg20 = spAvg(vols.slice(-21,-1).filter(v => v != null));
 if (lows[n-1] < priorLow && closes[n-1] > priorLow && vAvg20 && vols[n-1] > 1.3 * vAvg20) coil.shakeout = true;
@@ -3638,7 +3694,7 @@ const pos = r['52W_Range_Position_%'];
 if (pos !== null && pos >= 55) s += 6;
 if (r.Piotroski_F_Score !== null){ if (r.Piotroski_F_Score >= 7) s += 10; else if (r.Piotroski_F_Score >= 5) s += 6; }
 if ((r.Altman_Zone || '').toLowerCase() === 'safe') s += 6;
-return Math.round(Math.min(100, s / 89 * 100));   // 89 = designed max
+return Math.round(Math.min(100, s / 89 * 100));
 }
 
 function springTightness(r, coil){
@@ -3658,7 +3714,6 @@ if (coil.dryUp !== null){ if (coil.dryUp <= 0.6) s += 12; else if (coil.dryUp <=
 if (coil.upDownVol !== null && coil.upDownVol >= 1.25) s += 4;
 return Math.min(100, s);
 }
-/* CSV proxy mode */
 if (isSqueeze(r)) s += 30; else if (r['BB_Width_%'] !== null) s += 10;
 const off = coil.offHigh;
 if (off !== null && off >= -12 && off <= -1) s += 20; else if (off !== null && off > -1) s += 12;
@@ -3850,7 +3905,6 @@ const vis = visibleSprings(items).slice(0, 48);
 grid.innerHTML = vis.length ? vis.map(buildSpringCard).join('')
 : `<div class="today-empty" style="grid-column:1/-1;">Nothing passes the current filters — lower the minimum score or widen the state filter.</div>`;
 
-/* strip on the Today tab */
 const strip = document.getElementById('todaySpringsStrip');
 if (strip){
 const top = items.filter(i => i.state !== 'extended').sort((a,b) => b.score - a.score).slice(0,3);
@@ -3899,37 +3953,23 @@ async function renderSprings(){
 if (!RAW.length) return;
 wireSpringsControls();
 populateSpSector();
-paintSprings();              // instant pass — CSV fields
-try { await loadOHLCVData(); } catch(e){}
-paintSprings();              // full-fidelity pass — real price history
+await loadOHLCVData();   // shared promise — no duplicate fetch
+paintSprings();          // single pass, real data
 }
+
 /* ============================================================
 WAVE ANALYSIS — Elliott Wave engine
-Detects impulse (1-5), correction (ABC), diagonals.
-Validates 3 cardinal rules. Scores by Fibonacci confluence.
-Uses ATR-adaptive ZigZag pivots from index.json OHLCV data.
 ============================================================ */
 const WAVE_STATE = { filter: 'active', minScore: 40, sector: '', minBars: 60 };
 let WAVE_WIRED = false;
+let WAVES_RENDERING = false;
+let WAVE_DEBOUNCE = null;
 
-/* --- Fibonacci constants --- */
-const FIB = {
-    retrace: [0.236, 0.382, 0.500, 0.618, 0.786],
-    extend: [1.272, 1.618, 2.000, 2.618],
-    golden: [0.618, 0.786],
-    w3target: [1.618, 2.618],
-    w5target: [0.618, 1.000],
-    cTargets: [1.000, 1.618],
-};
-
-/* --- ATR-adaptive ZigZag pivot detection ---
-   Pivots confirmed only after price reverses past ATR * k threshold.
-   Returns alternating high/low pivots. */
+/* --- ATR-adaptive ZigZag pivot detection --- */
 function zigzagPivots(highs, lows, closes, atrPeriod, atrMultiplier) {
     const n = closes.length;
     if (n < atrPeriod + 5) return [];
 
-    // Compute ATR
     const trs = [];
     for (let i = 1; i < n; i++) {
         const tr = Math.max(
@@ -3948,9 +3988,9 @@ function zigzagPivots(highs, lows, closes, atrPeriod, atrMultiplier) {
     }
 
     const pivots = [];
-    let direction = 0; // 1 = up, -1 = down
+    let direction = 0;
     let extIdx = 0;
-    let extPrice = direction === 0 ? closes[0] : 0;
+    let extPrice = 0;
 
     for (let i = 1; i < n; i++) {
         const a = atr[i - 1];
@@ -3958,65 +3998,36 @@ function zigzagPivots(highs, lows, closes, atrPeriod, atrMultiplier) {
         const threshold = a * atrMultiplier;
 
         if (direction === 0) {
-            // Determine initial direction
             if (closes[i] > closes[0] + threshold) {
-                direction = 1;
-                extIdx = i;
-                extPrice = closes[i];
+                direction = 1; extIdx = i; extPrice = closes[i];
             } else if (closes[i] < closes[0] - threshold) {
-                direction = -1;
-                extIdx = i;
-                extPrice = closes[i];
+                direction = -1; extIdx = i; extPrice = closes[i];
             }
             continue;
         }
 
         if (direction === 1) {
-            // Looking for a high pivot: track highest high
-            if (highs[i] > extPrice) {
-                extPrice = highs[i];
-                extIdx = i;
-            } else if (extPrice - lows[i] > threshold) {
-                // Confirmed high pivot
+            if (highs[i] > extPrice) { extPrice = highs[i]; extIdx = i; }
+            else if (extPrice - lows[i] > threshold) {
                 pivots.push({ idx: extIdx, price: extPrice, type: 'high' });
-                direction = -1;
-                extIdx = i;
-                extPrice = lows[i];
+                direction = -1; extIdx = i; extPrice = lows[i];
             }
         } else {
-            // Looking for a low pivot: track lowest low
-            if (lows[i] < extPrice) {
-                extPrice = lows[i];
-                extIdx = i;
-            } else if (highs[i] - extPrice > threshold) {
-                // Confirmed low pivot
+            if (lows[i] < extPrice) { extPrice = lows[i]; extIdx = i; }
+            else if (highs[i] - extPrice > threshold) {
                 pivots.push({ idx: extIdx, price: extPrice, type: 'low' });
-                direction = 1;
-                extIdx = i;
-                extPrice = highs[i];
+                direction = 1; extIdx = i; extPrice = highs[i];
             }
         }
     }
 
-    // Include the last forming pivot
     if (pivots.length > 0) {
         pivots.push({ idx: extIdx, price: extPrice, type: direction === 1 ? 'high' : 'low', forming: true });
     }
-
     return pivots;
 }
 
-/* --- Fibonacci retracement/extension calculations --- */
-function fibRetrace(origin, end, ratio) {
-    return end - (end - origin) * ratio;
-}
-function fibExtend(origin, end, ratio) {
-    return origin + (end - origin) * ratio;
-}
-
-/* --- Validate the 3 cardinal rules for a 5-wave impulse --- */
 function validateImpulse(p) {
-    // p = [P0, P1, P2, P3, P4, P5] prices
     const [P0, P1, P2, P3, P4, P5] = p;
     const wave1 = P1 - P0;
     const wave2 = P2 - P1;
@@ -4025,26 +4036,14 @@ function validateImpulse(p) {
     const wave5 = P5 - P4;
 
     const rules = {};
-
-    // Rule 1: Wave 2 never retraces > 100% of Wave 1
     const w2Retrace = Math.abs(wave2 / wave1);
     rules.rule1 = w2Retrace < 1.0;
-
-    // Rule 2: Wave 3 is never the shortest among 1, 3, 5
     const w3len = Math.abs(wave3);
     rules.rule2 = w3len >= Math.abs(wave1) || w3len >= Math.abs(wave5);
 
-    // Rule 3: Wave 4 does not overlap Wave 1 territory
-    // For a bullish impulse: Wave 4 low must stay above Wave 1 high
-    if (P5 > P0) {
-        // Bullish
-        rules.rule3 = P4 > P1 * 0.995; // Allow 0.5% tolerance
-    } else {
-        // Bearish
-        rules.rule3 = P4 < P1 * 1.005;
-    }
+    if (P5 > P0) rules.rule3 = P4 > P1 * 0.995;
+    else rules.rule3 = P4 < P1 * 1.005;
 
-    // Diagonal exception: if rule3 fails but waves converge, it may be a diagonal
     const w1h = Math.abs(P1 - P0);
     const w3h = Math.abs(P3 - P2);
     const w5h = Math.abs(P5 - P4);
@@ -4053,7 +4052,6 @@ function validateImpulse(p) {
 
     return {
         rules,
-        waveLens: { wave1: Math.abs(wave1), wave2: Math.abs(wave2), wave3: Math.abs(wave3), wave4: Math.abs(wave4), wave5: Math.abs(wave5) },
         w2RetracePct: w2Retrace * 100,
         w3W1Ratio: Math.abs(wave3 / wave1),
         w5W1Ratio: Math.abs(wave5 / wave1),
@@ -4061,37 +4059,30 @@ function validateImpulse(p) {
     };
 }
 
-/* --- Confidence scoring for a detected pattern --- */
-function scoreWavePattern(validation, pivots, r) {
-    let ruleScore = 0;
-    let fibScore = 0;
-    let momScore = 0;
+function scoreWavePattern(validation, r) {
+    let ruleScore = 0, fibScore = 0, momScore = 0;
 
-    // Rule score (max 100)
-    const r1 = validation.rules.rule1 ? 30 : 0;
-    const r2 = validation.rules.rule2 ? 30 : 0;
-    const r3 = validation.rules.rule3 ? 25 : 0;
-    const r4 = validation.rules.rule1 && validation.rules.rule2 ? 15 : 0;
-    ruleScore = r1 + r2 + r3 + r4;
+    ruleScore += validation.rules.rule1 ? 30 : 0;
+    ruleScore += validation.rules.rule2 ? 30 : 0;
+    ruleScore += validation.rules.rule3 ? 25 : 0;
+    ruleScore += (validation.rules.rule1 && validation.rules.rule2) ? 15 : 0;
 
-    // Fibonacci confluence score (max 100)
     const w2r = validation.w2RetracePct;
     if (w2r >= 50 && w2r <= 78.6) fibScore += 40;
     else if (w2r >= 38.2 && w2r <= 85) fibScore += 25;
     else if (w2r >= 30) fibScore += 10;
 
     const w3r = validation.w3W1Ratio;
-    if (w3r >= 1.5 && w3r <= 1.7) fibScore += 35;       // Near 1.618 golden ratio
+    if (w3r >= 1.5 && w3r <= 1.7) fibScore += 35;
     else if (w3r >= 1.272 && w3r <= 2.618) fibScore += 25;
     else if (w3r >= 1.0) fibScore += 10;
 
     const w5r = validation.w5W1Ratio;
-    if (w5r >= 0.55 && w5r <= 0.68) fibScore += 25;      // Near 0.618
-    else if (w5r >= 0.9 && w5r <= 1.1) fibScore += 20;   // Wave equality
-    else if (w5r >= 1.5 && w5r <= 1.7) fibScore += 15;   // 1.618 extension
+    if (w5r >= 0.55 && w5r <= 0.68) fibScore += 25;
+    else if (w5r >= 0.9 && w5r <= 1.1) fibScore += 20;
+    else if (w5r >= 1.5 && w5r <= 1.7) fibScore += 15;
     else if (w5r > 0) fibScore += 5;
 
-    // Momentum score (max 100)
     if (r.RSI !== null) {
         if (r.RSI >= 50 && r.RSI <= 70) momScore += 40;
         else if (r.RSI >= 40 && r.RSI <= 75) momScore += 25;
@@ -4109,84 +4100,64 @@ function scoreWavePattern(validation, pivots, r) {
     }
     momScore = Math.min(100, momScore);
 
-    // Weighted total
     const total = Math.round(ruleScore * 0.45 + fibScore * 0.35 + momScore * 0.20);
-
     return { ruleScore, fibScore, momScore, total };
 }
 
-/* --- Detect all wave patterns for a single stock --- */
+/* --- Memoized wave detection --- */
 function detectWavePatterns(r) {
-    const h = spHist(r); // Reuse the OHLCV history function from Springs module
-    if (!h || h.length < 60) return [];
+    if (WAVE_CACHE.has(r.symbol)) return WAVE_CACHE.get(r.symbol);
+
+    const h = spHist(r);
+    if (!h || h.length < 60) {
+        // Only cache empty when OHLCV has been fully loaded. If not loaded yet,
+        // return empty without caching so a later call gets a real attempt.
+        if (OHLCV_DATA && !OHLCV_DATA.unavailable) WAVE_CACHE.set(r.symbol, []);
+        return [];
+    }
 
     const closes = h.map(p => p[4]);
-    const highs = h.map(p => p[2]);
-    const lows = h.map(p => p[3]);
+    const highs  = h.map(p => p[2]);
+    const lows   = h.map(p => p[3]);
 
-    // Get ZigZag pivots at multiple degrees
     const results = [];
     const degrees = [
-        { name: 'minor', atrPeriod: 14, mult: 2.5 },
+        { name: 'minor',        atrPeriod: 14, mult: 2.5 },
         { name: 'intermediate', atrPeriod: 14, mult: 3.5 },
-        { name: 'primary', atrPeriod: 14, mult: 5.0 },
+        { name: 'primary',      atrPeriod: 14, mult: 5.0 },
     ];
 
     for (const deg of degrees) {
         const pivots = zigzagPivots(highs, lows, closes, deg.atrPeriod, deg.mult);
         if (pivots.length < 6) continue;
 
-        // Scan for 5-wave impulse patterns (need 6 pivots: P0..P5)
         for (let i = 0; i <= pivots.length - 6; i++) {
             const p = pivots.slice(i, i + 6);
             const prices = p.map(x => x.price);
-
-            // Determine if bullish or bearish based on first pivot type
             const isBullish = p[0].type === 'low';
             if ((isBullish && p[5].type !== 'high') || (!isBullish && p[5].type !== 'low')) continue;
 
-            // Validate rules
             const validation = validateImpulse(prices);
             if (!validation.rules.rule1 || !validation.rules.rule2) continue;
             if (!validation.rules.rule3 && !validation.rules.isDiagonal) continue;
 
-            const scoring = scoreWavePattern(validation, p, r);
+            const scoring = scoreWavePattern(validation, r);
             if (scoring.total < 20) continue;
 
-            // Determine pattern type
             let patternType = 'impulse';
             if (validation.rules.isDiagonal) patternType = 'diagonal';
             else if (validation.w2RetracePct >= 50 && validation.w2RetracePct <= 78.6 && validation.w3W1Ratio >= 1.4) patternType = 'wave3';
             else if (Math.abs(validation.w5W1Ratio - 0.618) < 0.15 || Math.abs(validation.w5W1Ratio - 1.0) < 0.15) patternType = 'wave5';
 
-            // Calculate Fibonacci levels
-            const P0 = prices[0], P1 = prices[1], P2 = prices[2], P3 = prices[3], P4 = prices[4], P5 = prices[5];
+            const P0 = prices[0], P1 = prices[1], P2 = prices[2], P4 = prices[4];
             const wave1Len = Math.abs(P1 - P0);
-            const wave3Len = Math.abs(P3 - P2);
 
-            // Wave 3 target (1.618 * Wave 1 from Wave 2)
-            const w3target = isBullish
-                ? P2 + wave1Len * 1.618
-                : P2 - wave1Len * 1.618;
-
-            // Wave 5 targets
-            const w5target1 = isBullish
-                ? P4 + wave1Len * 0.618
-                : P4 - wave1Len * 0.618;
-            const w5target2 = isBullish
-                ? P4 + wave1Len * 1.000
-                : P4 - wave1Len * 1.000;
-
-            // Invalidation level (start of Wave 1)
+            const w3target = isBullish ? P2 + wave1Len * 1.618 : P2 - wave1Len * 1.618;
+            const w5target1 = isBullish ? P4 + wave1Len * 0.618 : P4 - wave1Len * 0.618;
+            const w5target2 = isBullish ? P4 + wave1Len * 1.000 : P4 - wave1Len * 1.000;
             const invalidation = P0;
-
-            // Stop for Wave 3 entry (below Wave 1 start)
             const stopLevel = isBullish ? Math.min(P0, P2) * 0.995 : Math.max(P0, P2) * 1.005;
-
-            // Entry level (current price or Wave 2 completion)
-            const entry = isBullish ? P2 : P2;
-
-            // R:R for Wave 3
+            const entry = P2;
             const risk = Math.abs(entry - stopLevel);
             const reward = Math.abs(w3target - entry);
             const rr = risk > 0 ? reward / risk : 0;
@@ -4206,55 +4177,44 @@ function detectWavePatterns(r) {
                 stopLevel,
                 entry,
                 rr,
-                wave1Len,
-                wave3Len,
                 currentPrice: closes[closes.length - 1],
                 hasHistory: true,
             });
         }
 
-        // Scan for ABC corrections (4 pivots: A, B, C + origin)
         if (pivots.length >= 4) {
             for (let i = 0; i <= pivots.length - 4; i++) {
                 const p = pivots.slice(i, i + 4);
                 const prices = p.map(x => x.price);
-
-                // ABC: origin -> A -> B -> C
-                const isBullish = p[0].type === 'low'; // Correction after an up move
+                const isBullish = p[0].type === 'low';
                 const wa = Math.abs(prices[1] - prices[0]);
                 const wb = Math.abs(prices[2] - prices[1]);
                 const wc = Math.abs(prices[3] - prices[2]);
-
-                // Zigzag: B retraces 38-79% of A, C >= A
                 const bRetrace = wa > 0 ? wb / wa : 0;
                 const cRatio = wa > 0 ? wc / wa : 0;
 
                 if (bRetrace < 0.3 || bRetrace > 0.85) continue;
                 if (cRatio < 0.8) continue;
 
-                // Check C doesn't exceed origin
                 const cBeyondOrigin = isBullish ? prices[3] < prices[0] : prices[3] > prices[0];
                 if (cBeyondOrigin) continue;
 
                 let abcScore = 0;
                 if (bRetrace >= 0.382 && bRetrace <= 0.618) abcScore += 30;
                 else abcScore += 15;
-                if (cRatio >= 0.95 && cRatio <= 1.05) abcScore += 30; // C ≈ A
-                else if (cRatio >= 1.5 && cRatio <= 1.7) abcScore += 25; // C = 1.618A
+                if (cRatio >= 0.95 && cRatio <= 1.05) abcScore += 30;
+                else if (cRatio >= 1.5 && cRatio <= 1.7) abcScore += 25;
                 else abcScore += 10;
-                if (r.RSI !== null && r.RSI < 45) abcScore += 20; // Oversold at correction end
+                if (r.RSI !== null && r.RSI < 45) abcScore += 20;
                 else if (r.RSI !== null && r.RSI < 55) abcScore += 10;
-                if (r.Volume_Ratio_30D !== null && r.Volume_Ratio_30D < 0.9) abcScore += 20; // Volume dry-up
+                if (r.Volume_Ratio_30D !== null && r.Volume_Ratio_30D < 0.9) abcScore += 20;
 
                 const total = Math.min(100, abcScore);
-
                 if (total < 25) continue;
 
                 const invalidation = isBullish ? prices[0] * 0.99 : prices[0] * 1.01;
-                const entry = prices[3]; // C end
-                const target = isBullish
-                    ? entry + wa * 1.0
-                    : entry - wa * 1.0;
+                const entry = prices[3];
+                const target = isBullish ? entry + wa * 1.0 : entry - wa * 1.0;
 
                 results.push({
                     degree: deg.name,
@@ -4262,7 +4222,7 @@ function detectWavePatterns(r) {
                     isBullish,
                     pivots: p,
                     prices,
-                    validation: { rules: { rule1: true, rule2: true, rule3: true }, isDiagonal: false, waveLens: {}, w2RetracePct: bRetrace * 100, w3W1Ratio: cRatio },
+                    validation: { rules: { rule1: true, rule2: true, rule3: true }, isDiagonal: false, w2RetracePct: bRetrace * 100, w3W1Ratio: cRatio, w5W1Ratio: 0 },
                     scoring: { ruleScore: 60, fibScore: total * 0.7, momScore: total * 0.3, total },
                     w3target: target,
                     w5target1: null,
@@ -4271,8 +4231,6 @@ function detectWavePatterns(r) {
                     stopLevel: invalidation,
                     entry,
                     rr: Math.abs(target - entry) / Math.abs(entry - invalidation),
-                    wave1Len: wa,
-                    wave3Len: wc,
                     currentPrice: closes[closes.length - 1],
                     hasHistory: true,
                 });
@@ -4280,22 +4238,23 @@ function detectWavePatterns(r) {
         }
     }
 
-    // Deduplicate: keep the highest-scoring pattern per stock
-    if (results.length === 0) return [];
+    if (results.length === 0) {
+        WAVE_CACHE.set(r.symbol, []);
+        return [];
+    }
     results.sort((a, b) => b.scoring.total - a.scoring.total);
-    return results.slice(0, 3); // Keep top 3 per stock
+    const top = results.slice(0, 3);
+    WAVE_CACHE.set(r.symbol, top);
+    return top;
 }
 
-/* --- Wave narrative --- */
 function waveNarrative(result) {
     const v = result.validation;
     const bits = [];
-
     if (result.patternType === 'correction') {
         bits.push(`ABC correction — B retraced ${v.w2RetracePct.toFixed(0)}% of A`);
         bits.push(`C = ${v.w3W1Ratio.toFixed(2)}× A`);
-        if (result.isBullish) bits.push('bullish trend resumption setup');
-        else bits.push('bearish trend resumption setup');
+        bits.push(result.isBullish ? 'bullish trend resumption setup' : 'bearish trend resumption setup');
     } else {
         if (v.rules.rule1 && v.rules.rule2 && v.rules.rule3) bits.push('all 3 cardinal rules pass');
         else if (v.rules.isDiagonal) bits.push('diagonal pattern (Rule 3 overlap tolerated)');
@@ -4303,13 +4262,11 @@ function waveNarrative(result) {
         bits.push(`W3 = ${v.w3W1Ratio.toFixed(2)}× W1`);
         bits.push(`W5 = ${v.w5W1Ratio.toFixed(2)}× W1`);
     }
-
     const conf = result.scoring.total;
     const label = conf >= 70 ? 'High-confidence' : conf >= 50 ? 'Moderate' : 'Developing';
     return `${label}: ${bits.join(' · ')}.`;
 }
 
-/* --- Wave sparkline (SVG) --- */
 function waveSpark(result) {
     const h = spHist(result.r);
     if (!h || h.length < 10) return '';
@@ -4321,7 +4278,6 @@ function waveSpark(result) {
     const Y = v => max > min ? pad + (H - 2 * pad) * (1 - (v - min) / (max - min)) : H / 2;
     const pts = vals.map((v, i) => X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
 
-    // Mark wave pivots
     const pivotMarkers = result.pivots.map(p => {
         const idx = h.length - 60 + p.idx;
         if (idx < 0 || idx >= bars.length) return '';
@@ -4337,7 +4293,6 @@ function waveSpark(result) {
     </svg>`;
 }
 
-/* --- Build wave card --- */
 function buildWaveCard(result) {
     const r = result.r;
     const v = result.validation;
@@ -4346,14 +4301,11 @@ function buildWaveCard(result) {
 
     const chips = [];
     chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
-    if (v.rules.rule1) chips.push(`<span class="wv-chip hot">✓ Rule 1</span>`);
-    else chips.push(`<span class="wv-chip warn">✗ Rule 1</span>`);
-    if (v.rules.rule2) chips.push(`<span class="wv-chip hot">✓ Rule 2</span>`);
-    else chips.push(`<span class="wv-chip warn">✗ Rule 2</span>`);
+    chips.push(v.rules.rule1 ? `<span class="wv-chip hot">✓ Rule 1</span>` : `<span class="wv-chip warn">✗ Rule 1</span>`);
+    chips.push(v.rules.rule2 ? `<span class="wv-chip hot">✓ Rule 2</span>` : `<span class="wv-chip warn">✗ Rule 2</span>`);
     if (v.rules.rule3) chips.push(`<span class="wv-chip hot">✓ Rule 3</span>`);
     else if (v.rules.isDiagonal) chips.push(`<span class="wv-chip zap">Diagonal</span>`);
     else chips.push(`<span class="wv-chip warn">✗ Rule 3</span>`);
-
     if (result.patternType === 'wave3') chips.push(`<span class="wv-chip zap">⚡ Wave 3 setup</span>`);
     if (result.patternType === 'wave5') chips.push(`<span class="wv-chip warn">⚠ Wave 5 exhaustion</span>`);
     if (result.patternType === 'correction') chips.push(`<span class="wv-chip">ABC correction</span>`);
@@ -4383,19 +4335,13 @@ function buildWaveCard(result) {
         </div>`;
 
     const patternClass = {
-        impulse: 'impulse',
-        correction: 'correction',
-        wave3: 'wave3',
-        wave5: 'wave5',
-        diagonal: 'diagonal',
+        impulse: 'impulse', correction: 'correction', wave3: 'wave3',
+        wave5: 'wave5', diagonal: 'diagonal',
     }[result.patternType] || 'impulse';
 
     const patternLabel = {
-        impulse: 'Impulse 1-5',
-        correction: 'ABC Correction',
-        wave3: 'Wave 3 Setup',
-        wave5: 'Wave 5 Exhaustion',
-        diagonal: 'Diagonal',
+        impulse: 'Impulse 1-5', correction: 'ABC Correction', wave3: 'Wave 3 Setup',
+        wave5: 'Wave 5 Exhaustion', diagonal: 'Diagonal',
     }[result.patternType] || 'Pattern';
 
     const invalidateText = result.patternType === 'correction'
@@ -4435,7 +4381,6 @@ function buildWaveCard(result) {
     </div>`;
 }
 
-/* --- Visibility filter --- */
 function visibleWaves(items) {
     const f = WAVE_STATE;
     return items
@@ -4460,23 +4405,25 @@ function visibleWaves(items) {
         });
 }
 
-/* --- Main paint function --- */
-function paintWaves() {
+/* --- Chunked wave paint (keeps the UI responsive) --- */
+async function paintWaves() {
     const grid = document.getElementById('waveGrid');
-    if (!grid) return;
+    if (!grid || WAVES_RENDERING) return;
+    WAVES_RENDERING = true;
 
-    // Collect all patterns
+    grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">Scanning price history for Elliott Wave structures…</div>`;
+    await new Promise(res => setTimeout(res, 0));
+
     const allItems = [];
     const totalStocks = RAW.length;
 
-    for (const r of RAW) {
+    for (let i = 0; i < totalStocks; i++) {
+        const r = RAW[i];
         const patterns = detectWavePatterns(r);
-        for (const res of patterns) {
-            allItems.push({ r, result: res });
-        }
+        for (const res of patterns) allItems.push({ r, result: res });
+        if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
     }
 
-    // Stats
     const counts = { wave3: 0, wave5: 0, impulse: 0, correction: 0, diagonal: 0 };
     let histCount = 0;
     allItems.forEach(item => {
@@ -4493,32 +4440,38 @@ function paintWaves() {
         if (histCount > 0) {
             mode.innerHTML = `Data mode: <b>FULL FIDELITY</b> — ${allItems.length} wave pattern${allItems.length===1?'':'s'} detected from real price history using ATR-adaptive ZigZag pivots.`;
         } else if (!OHLCV_DATA || OHLCV_DATA.unavailable) {
-            mode.innerHTML = `Data mode: <b>NO DATA</b> — <code>index.json</code> is required for wave detection. Add OHLCV history to enable this tab.`;
+            mode.innerHTML = `Data mode: <b>NO DATA</b> — <code>index.json</code> is required for wave detection.`;
         } else {
-            mode.innerHTML = `Data mode: <b>SCANNED</b> — OHLCV history loaded, but no valid Elliott Wave patterns passed the current criteria. Try lowering the minimum confidence or adjusting the pattern filter.`;
+            mode.innerHTML = `Data mode: <b>SCANNED</b> — OHLCV loaded, but no valid Elliott Wave patterns passed the current criteria. Try lowering the minimum confidence or adjusting the pattern filter.`;
         }
     }
+
     const statsEl = document.getElementById('waveStats');
     if (statsEl) {
         const defs = [
-            ['Wave 3', counts.wave3, 'var(--violet)'],
-            ['Wave 5', counts.wave5, 'var(--coral)'],
-            ['Impulse', counts.impulse, 'var(--teal)'],
-            ['ABC', counts.correction, 'var(--amber)'],
-            ['Diagonal', counts.diagonal, 'var(--blue)'],
-            ['Total', allItems.length, 'var(--text)'],
+            ['Wave 3',   counts.wave3,      'var(--violet)'],
+            ['Wave 5',   counts.wave5,      'var(--coral)'],
+            ['Impulse',  counts.impulse,    'var(--teal)'],
+            ['ABC',      counts.correction, 'var(--amber)'],
+            ['Diagonal', counts.diagonal,   'var(--blue)'],
+            ['Total',    allItems.length,   'var(--text)'],
         ];
         statsEl.innerHTML = defs.map(d => `<div class="wave-stat" style="border-top:2px solid ${d[2]};"><div class="sv">${d[1]}</div><div class="sl">${d[0]}</div></div>`).join('');
     }
 
-    // Render grid
     const vis = visibleWaves(allItems).slice(0, 48);
     grid.innerHTML = vis.length
         ? vis.map(buildWaveCard.bind(null)).join('')
         : `<div class="today-empty" style="grid-column:1/-1;">No wave patterns detected with the current filters. Lower the minimum confidence or ensure <code>index.json</code> is present.</div>`;
+
+    WAVES_RENDERING = false;
 }
 
-/* --- Wire controls --- */
+function queueWaveRepaint() {
+    clearTimeout(WAVE_DEBOUNCE);
+    WAVE_DEBOUNCE = setTimeout(() => paintWaves(), 120);
+}
+
 function wireWaveControls() {
     if (WAVE_WIRED) return;
     WAVE_WIRED = true;
@@ -4528,10 +4481,10 @@ function wireWaveControls() {
     const secEl = document.getElementById('wvSector');
     const barsEl = document.getElementById('wvMinBars');
 
-    if (minEl) minEl.addEventListener('input', () => { WAVE_STATE.minScore = parseFloat(minEl.value) || 0; paintWaves(); });
-    if (patEl) patEl.addEventListener('change', () => { WAVE_STATE.filter = patEl.value; paintWaves(); });
-    if (secEl) secEl.addEventListener('change', () => { WAVE_STATE.sector = secEl.value; paintWaves(); });
-    if (barsEl) barsEl.addEventListener('input', () => { WAVE_STATE.minBars = parseFloat(barsEl.value) || 60; paintWaves(); });
+    if (minEl) minEl.addEventListener('input',  () => { WAVE_STATE.minScore = parseFloat(minEl.value) || 0; queueWaveRepaint(); });
+    if (patEl) patEl.addEventListener('change', () => { WAVE_STATE.filter = patEl.value; queueWaveRepaint(); });
+    if (secEl) secEl.addEventListener('change', () => { WAVE_STATE.sector = secEl.value; queueWaveRepaint(); });
+    if (barsEl) barsEl.addEventListener('input', () => { WAVE_STATE.minBars = parseFloat(barsEl.value) || 60; queueWaveRepaint(); });
 }
 
 function populateWaveSector() {
@@ -4549,10 +4502,9 @@ async function renderWaves() {
     if (!RAW.length) return;
     wireWaveControls();
     populateWaveSector();
-    await loadOHLCVData(); // Ensure OHLCV data is available
+    await loadOHLCVData();
     paintWaves();
 }
-  
 </script>
 </body>
 </html>
