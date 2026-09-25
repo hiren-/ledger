@@ -3591,9 +3591,28 @@ const SP_STATE_ORDER = { ignition:0, coiled:1, pullback:2, extended:3 };
 let SP_WIRED = false;
 
 function spHist(r){
-if (!OHLCV_DATA || OHLCV_DATA.unavailable) return null;
-const arr = OHLCV_DATA.prices?.[r.exchange + ':' + r.symbol];
-return (arr && arr.length >= 60) ? arr : null;
+    if (!OHLCV_DATA || OHLCV_DATA.unavailable || !OHLCV_DATA.prices) return null;
+    const prices = OHLCV_DATA.prices;
+    const ex = (r.exchange || '').toUpperCase();
+    const sym = (r.symbol || '').toUpperCase();
+    if (!sym) return null;
+
+    // index.json appears to be BSE-keyed. Try every plausible combination.
+    const candidates = [
+        ex + ':' + sym,          // NSE:RELIANCE  (original intent)
+        'BSE:' + sym,            // BSE:RELIANCE  ← likely the match
+        'NSE:' + sym,            // NSE:RELIANCE  (if CSV is NSE and file ever has NSE)
+        sym,                     // RELIANCE
+        sym + '.NS',             // RELIANCE.NS
+        sym + '.BO',             // RELIANCE.BO
+        'BSE:' + sym + '.BO',
+        'NSE:' + sym + '.NS',
+    ];
+    for (const k of candidates){
+        const arr = prices[k];
+        if (arr && arr.length >= 60) return arr;
+    }
+    return null;
 }
 function spStd(vals){
 const n = vals.length; if (n < 2) return 0;
