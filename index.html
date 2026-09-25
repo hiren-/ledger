@@ -4440,11 +4440,11 @@ async function paintWaves() {
         const totalStocks = RAW.length;
 
         for (let i = 0; i < totalStocks; i++) {
-            const r = RAW[i];
-            const patterns = detectWavePatterns(r);
-            for (const res of patterns) allItems.push({ r, result: res });
-            if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
-        }
+             const r = RAW[i];
+             const patterns = detectWavePatterns(r);
+             for (const res of patterns) { res.r = r; allItems.push({ r, result: res }); }   // ← added res.r = r
+             if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
+         }
 
         const counts = { wave3: 0, wave5: 0, impulse: 0, correction: 0, diagonal: 0 };
         let histCount = 0;
