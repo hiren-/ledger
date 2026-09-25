@@ -4046,37 +4046,7 @@ function zigzagPivots(highs, lows, closes, atrPeriod, atrMultiplier) {
     return pivots;
 }
 
-function validateImpulse(p) {
-    const [P0, P1, P2, P3, P4, P5] = p;
-    const wave1 = P1 - P0;
-    const wave2 = P2 - P1;
-    const wave3 = P3 - P2;
-    const wave4 = P4 - P3;
-    const wave5 = P5 - P4;
 
-    const rules = {};
-    const w2Retrace = Math.abs(wave2 / wave1);
-    rules.rule1 = w2Retrace < 1.0;
-    const w3len = Math.abs(wave3);
-    rules.rule2 = w3len >= Math.abs(wave1) || w3len >= Math.abs(wave5);
-
-    if (P5 > P0) rules.rule3 = P4 > P1 * 0.995;
-    else rules.rule3 = P4 < P1 * 1.005;
-
-    const w1h = Math.abs(P1 - P0);
-    const w3h = Math.abs(P3 - P2);
-    const w5h = Math.abs(P5 - P4);
-    const converging = w3h < w1h && w5h < w3h;
-    rules.isDiagonal = !rules.rule3 && converging;
-
-    return {
-        rules,
-        w2RetracePct: w2Retrace * 100,
-        w3W1Ratio: Math.abs(wave3 / wave1),
-        w5W1Ratio: Math.abs(wave5 / wave1),
-        w4W3Ratio: Math.abs(wave4 / wave3),
-    };
-}
 
 function scoreWavePattern(validation, r) {
     let ruleScore = 0, fibScore = 0, momScore = 0;
@@ -4124,149 +4094,710 @@ function scoreWavePattern(validation, r) {
 }
 
 /* --- Memoized wave detection --- */
+function validateImpulse(p) {
+    const [P0, P1, P2, P3, P4, P5] = p;
+
+    if (![P0, P1, P2, P3, P4, P5].every(Number.isFinite)) {
+        return {
+            rules: {
+                rule1: false,
+                rule2: false,
+                rule3: false,
+                isDiagonal: false
+            },
+            w2RetracePct: 0,
+            w3W1Ratio: 0,
+            w5W1Ratio: 0,
+            w4W3Ratio: 0
+        };
+    }
+
+    const bullish = P5 > P0;
+
+    const w1 = Math.abs(P1 - P0);
+    const w2 = Math.abs(P2 - P1);
+    const w3 = Math.abs(P3 - P2);
+    const w4 = Math.abs(P4 - P3);
+    const w5 = Math.abs(P5 - P4);
+
+    if (w1 <= 0 || w3 <= 0 || w5 <= 0) {
+        return {
+            rules: {
+                rule1: false,
+                rule2: false,
+                rule3: false,
+                isDiagonal: false
+            },
+            w2RetracePct: 0,
+            w3W1Ratio: 0,
+            w5W1Ratio: 0,
+            w4W3Ratio: 0
+        };
+    }
+
+    /*
+     * Elliott Wave cardinal rules
+     *
+     * Rule 1:
+     * Wave 2 must not retrace 100% or more of Wave 1.
+     */
+    const w2Retrace = w2 / w1;
+    const rule1 = w2Retrace < 1.0;
+
+    /*
+     * Rule 2:
+     * Wave 3 cannot be the shortest of Waves 1, 3 and 5.
+     *
+     * Therefore W3 >= min(W1, W5)
+     */
+    const rule2 = w3 >= Math.min(w1, w5);
+
+    /*
+     * Rule 3:
+     * In a normal impulse Wave 4 must not overlap Wave 1 territory.
+     *
+     * Bullish:
+     * Wave 4 low must remain above Wave 1 high.
+     *
+     * Bearish:
+     * Wave 4 high must remain below Wave 1 low.
+     *
+     * A very small tolerance is allowed for market-data noise.
+     */
+    const tolerance = Math.max(
+        0.001 * Math.abs(P1 - P0),
+        0.0001
+    );
+
+    let rule3;
+
+    if (bullish) {
+        rule3 = P4 > P1 - tolerance;
+    } else {
+        rule3 = P4 < P1 + tolerance;
+    }
+
+    /*
+     * Diagonal:
+     * Allow Wave 4 overlap when the five waves are contracting.
+     */
+    const converging =
+        w3 < w1 &&
+        w5 < w3;
+
+    const isDiagonal =
+        !rule3 &&
+        converging;
+
+    return {
+        rules: {
+            rule1,
+            rule2,
+            rule3,
+            isDiagonal
+        },
+
+        w2RetracePct: w2Retrace * 100,
+        w3W1Ratio: w3 / w1,
+        w5W1Ratio: w5 / w1,
+        w4W3Ratio: w4 / w3
+    };
+}
+
+
+/* ============================================================
+   WAVE DETECTION
+   ============================================================ */
+
 function detectWavePatterns(r) {
-    if (WAVE_CACHE.has(r.symbol)) return WAVE_CACHE.get(r.symbol);
+
+    /*
+     * Do not return a permanently cached empty result.
+     * OHLCV can become available after the first render.
+     */
+    if (WAVE_CACHE.has(r.symbol)) {
+        const cached = WAVE_CACHE.get(r.symbol);
+
+        if (Array.isArray(cached) && cached.length > 0) {
+            return cached;
+        }
+
+        /*
+         * Empty cache is intentionally ignored.
+         */
+        WAVE_CACHE.delete(r.symbol);
+    }
 
     const h = spHist(r);
-    if (!h || h.length < 60) {
-        // Only cache empty when OHLCV has been fully loaded. If not loaded yet,
-        // return empty without caching so a later call gets a real attempt.
-        if (OHLCV_DATA && !OHLCV_DATA.unavailable) WAVE_CACHE.set(r.symbol, []);
+
+    if (!h || h.length < WAVE_STATE.minBars) {
         return [];
     }
 
-    const closes = h.map(p => p[4]);
-    const highs  = h.map(p => p[2]);
-    const lows   = h.map(p => p[3]);
+    const closes = h
+        .map(p => Number(p[4]))
+        .filter(Number.isFinite);
+
+    const highs = h
+        .map(p => Number(p[2]))
+        .filter(Number.isFinite);
+
+    const lows = h
+        .map(p => Number(p[3]))
+        .filter(Number.isFinite);
+
+    if (
+        closes.length < WAVE_STATE.minBars ||
+        highs.length !== closes.length ||
+        lows.length !== closes.length
+    ) {
+        return [];
+    }
 
     const results = [];
+
+    /*
+     * Three different degrees.
+     *
+     * Lower multiplier = more pivots
+     * Higher multiplier = larger structural waves
+     */
     const degrees = [
-        { name: 'minor',        atrPeriod: 14, mult: 2.5 },
-        { name: 'intermediate', atrPeriod: 14, mult: 3.5 },
-        { name: 'primary',      atrPeriod: 14, mult: 5.0 },
+        {
+            name: 'minor',
+            atrPeriod: 14,
+            mult: 2.0
+        },
+        {
+            name: 'intermediate',
+            atrPeriod: 14,
+            mult: 3.0
+        },
+        {
+            name: 'primary',
+            atrPeriod: 14,
+            mult: 4.5
+        }
     ];
 
     for (const deg of degrees) {
-        const pivots = zigzagPivots(highs, lows, closes, deg.atrPeriod, deg.mult);
-        if (pivots.length < 6) continue;
 
-        for (let i = 0; i <= pivots.length - 6; i++) {
-            const p = pivots.slice(i, i + 6);
-            const prices = p.map(x => x.price);
-            const isBullish = p[0].type === 'low';
-            if ((isBullish && p[5].type !== 'high') || (!isBullish && p[5].type !== 'low')) continue;
+        const pivots = zigzagPivots(
+            highs,
+            lows,
+            closes,
+            deg.atrPeriod,
+            deg.mult
+        );
 
-            const validation = validateImpulse(prices);
-            if (!validation.rules.rule1 || !validation.rules.rule2) continue;
-            if (!validation.rules.rule3 && !validation.rules.isDiagonal) continue;
-
-            const scoring = scoreWavePattern(validation, r);
-            if (scoring.total < 20) continue;
-
-            let patternType = 'impulse';
-            if (validation.rules.isDiagonal) patternType = 'diagonal';
-            else if (validation.w2RetracePct >= 50 && validation.w2RetracePct <= 78.6 && validation.w3W1Ratio >= 1.4) patternType = 'wave3';
-            else if (Math.abs(validation.w5W1Ratio - 0.618) < 0.15 || Math.abs(validation.w5W1Ratio - 1.0) < 0.15) patternType = 'wave5';
-
-            const P0 = prices[0], P1 = prices[1], P2 = prices[2], P4 = prices[4];
-            const wave1Len = Math.abs(P1 - P0);
-
-            const w3target = isBullish ? P2 + wave1Len * 1.618 : P2 - wave1Len * 1.618;
-            const w5target1 = isBullish ? P4 + wave1Len * 0.618 : P4 - wave1Len * 0.618;
-            const w5target2 = isBullish ? P4 + wave1Len * 1.000 : P4 - wave1Len * 1.000;
-            const invalidation = P0;
-            const stopLevel = isBullish ? Math.min(P0, P2) * 0.995 : Math.max(P0, P2) * 1.005;
-            const entry = P2;
-            const risk = Math.abs(entry - stopLevel);
-            const reward = Math.abs(w3target - entry);
-            const rr = risk > 0 ? reward / risk : 0;
-
-            results.push({
-                degree: deg.name,
-                patternType,
-                isBullish,
-                pivots: p,
-                prices,
-                validation,
-                scoring,
-                w3target,
-                w5target1,
-                w5target2,
-                invalidation,
-                stopLevel,
-                entry,
-                rr,
-                currentPrice: closes[closes.length - 1],
-                hasHistory: true,
-            });
+        if (!Array.isArray(pivots) || pivots.length < 4) {
+            continue;
         }
 
-        if (pivots.length >= 4) {
-            for (let i = 0; i <= pivots.length - 4; i++) {
-                const p = pivots.slice(i, i + 4);
-                const prices = p.map(x => x.price);
+
+        /* ========================================================
+           IMPULSE / 1-2-3-4-5
+           ======================================================== */
+
+        if (pivots.length >= 6) {
+
+            for (
+                let i = 0;
+                i <= pivots.length - 6;
+                i++
+            ) {
+
+                const p = pivots.slice(i, i + 6);
+
+                const prices = p.map(x => Number(x.price));
+
+                if (!prices.every(Number.isFinite)) {
+                    continue;
+                }
+
                 const isBullish = p[0].type === 'low';
-                const wa = Math.abs(prices[1] - prices[0]);
-                const wb = Math.abs(prices[2] - prices[1]);
-                const wc = Math.abs(prices[3] - prices[2]);
-                const bRetrace = wa > 0 ? wb / wa : 0;
-                const cRatio = wa > 0 ? wc / wa : 0;
 
-                if (bRetrace < 0.3 || bRetrace > 0.85) continue;
-                if (cRatio < 0.8) continue;
+                /*
+                 * Alternating pivot sequence is mandatory.
+                 */
+                let alternating = true;
 
-                const cBeyondOrigin = isBullish ? prices[3] < prices[0] : prices[3] > prices[0];
-                if (cBeyondOrigin) continue;
+                for (let j = 1; j < p.length; j++) {
+                    if (p[j].type === p[j - 1].type) {
+                        alternating = false;
+                        break;
+                    }
+                }
 
-                let abcScore = 0;
-                if (bRetrace >= 0.382 && bRetrace <= 0.618) abcScore += 30;
-                else abcScore += 15;
-                if (cRatio >= 0.95 && cRatio <= 1.05) abcScore += 30;
-                else if (cRatio >= 1.5 && cRatio <= 1.7) abcScore += 25;
-                else abcScore += 10;
-                if (r.RSI !== null && r.RSI < 45) abcScore += 20;
-                else if (r.RSI !== null && r.RSI < 55) abcScore += 10;
-                if (r.Volume_Ratio_30D !== null && r.Volume_Ratio_30D < 0.9) abcScore += 20;
+                if (!alternating) {
+                    continue;
+                }
 
-                const total = Math.min(100, abcScore);
-                if (total < 25) continue;
+                /*
+                 * Start/end must have the correct orientation.
+                 */
+                if (isBullish && p[5].type !== 'high') {
+                    continue;
+                }
 
-                const invalidation = isBullish ? prices[0] * 0.99 : prices[0] * 1.01;
-                const entry = prices[3];
-                const target = isBullish ? entry + wa * 1.0 : entry - wa * 1.0;
+                if (!isBullish && p[5].type !== 'low') {
+                    continue;
+                }
+
+                const validation = validateImpulse(prices);
+
+                /*
+                 * We now accept a structurally valid impulse.
+                 *
+                 * For diagonal patterns Rule 3 overlap is allowed.
+                 */
+                if (!validation.rules.rule1) {
+                    continue;
+                }
+
+                if (!validation.rules.rule2) {
+                    continue;
+                }
+
+                if (
+                    !validation.rules.rule3 &&
+                    !validation.rules.isDiagonal
+                ) {
+                    continue;
+                }
+
+                const scoring = scoreWavePattern(
+                    validation,
+                    r
+                );
+
+                /*
+                 * Keep the engine permissive.
+                 * UI's Min Confidence handles final filtering.
+                 */
+                if (scoring.total < 20) {
+                    continue;
+                }
+
+                let patternType = 'impulse';
+
+                if (validation.rules.isDiagonal) {
+                    patternType = 'diagonal';
+
+                } else if (
+                    validation.w2RetracePct >= 50 &&
+                    validation.w2RetracePct <= 78.6 &&
+                    validation.w3W1Ratio >= 1.4
+                ) {
+                    patternType = 'wave3';
+
+                } else if (
+                    Math.abs(
+                        validation.w5W1Ratio - 0.618
+                    ) < 0.15 ||
+
+                    Math.abs(
+                        validation.w5W1Ratio - 1.0
+                    ) < 0.15
+                ) {
+                    patternType = 'wave5';
+                }
+
+                const P0 = prices[0];
+                const P1 = prices[1];
+                const P2 = prices[2];
+                const P4 = prices[4];
+
+                const wave1Len =
+                    Math.abs(P1 - P0);
+
+                if (wave1Len <= 0) {
+                    continue;
+                }
+
+                const w3target = isBullish
+                    ? P2 + wave1Len * 1.618
+                    : P2 - wave1Len * 1.618;
+
+                const w5target1 = isBullish
+                    ? P4 + wave1Len * 0.618
+                    : P4 - wave1Len * 0.618;
+
+                const w5target2 = isBullish
+                    ? P4 + wave1Len
+                    : P4 - wave1Len;
+
+                const invalidation = P0;
+
+                const stopLevel = isBullish
+                    ? Math.min(P0, P2) * 0.995
+                    : Math.max(P0, P2) * 1.005;
+
+                const entry = P2;
+
+                const risk =
+                    Math.abs(entry - stopLevel);
+
+                const reward =
+                    Math.abs(w3target - entry);
+
+                const rr =
+                    risk > 0
+                        ? reward / risk
+                        : 0;
 
                 results.push({
                     degree: deg.name,
-                    patternType: 'correction',
+
+                    patternType,
+
                     isBullish,
+
                     pivots: p,
+
                     prices,
-                    validation: { rules: { rule1: true, rule2: true, rule3: true }, isDiagonal: false, w2RetracePct: bRetrace * 100, w3W1Ratio: cRatio, w5W1Ratio: 0 },
-                    scoring: { ruleScore: 60, fibScore: total * 0.7, momScore: total * 0.3, total },
-                    w3target: target,
-                    w5target1: null,
-                    w5target2: null,
+
+                    validation,
+
+                    scoring,
+
+                    w3target,
+
+                    w5target1,
+
+                    w5target2,
+
                     invalidation,
-                    stopLevel: invalidation,
+
+                    stopLevel,
+
                     entry,
-                    rr: Math.abs(target - entry) / Math.abs(entry - invalidation),
-                    currentPrice: closes[closes.length - 1],
-                    hasHistory: true,
+
+                    rr,
+
+                    currentPrice:
+                        closes[closes.length - 1],
+
+                    hasHistory: true
+                });
+            }
+        }
+
+
+        /* ========================================================
+           ABC CORRECTION
+           ======================================================== */
+
+        if (pivots.length >= 4) {
+
+            for (
+                let i = 0;
+                i <= pivots.length - 4;
+                i++
+            ) {
+
+                const p = pivots.slice(i, i + 4);
+
+                const prices =
+                    p.map(x => Number(x.price));
+
+                if (!prices.every(Number.isFinite)) {
+                    continue;
+                }
+
+                const isBullish =
+                    p[0].type === 'low';
+
+                /*
+                 * Alternating pivots.
+                 */
+                let alternating = true;
+
+                for (let j = 1; j < p.length; j++) {
+                    if (p[j].type === p[j - 1].type) {
+                        alternating = false;
+                        break;
+                    }
+                }
+
+                if (!alternating) {
+                    continue;
+                }
+
+                const wa =
+                    Math.abs(
+                        prices[1] - prices[0]
+                    );
+
+                const wb =
+                    Math.abs(
+                        prices[2] - prices[1]
+                    );
+
+                const wc =
+                    Math.abs(
+                        prices[3] - prices[2]
+                    );
+
+                if (wa <= 0 || wc <= 0) {
+                    continue;
+                }
+
+                const bRetrace =
+                    wb / wa;
+
+                const cRatio =
+                    wc / wa;
+
+                /*
+                 * B normally retraces 30–85% of A.
+                 */
+                if (
+                    bRetrace < 0.30 ||
+                    bRetrace > 0.85
+                ) {
+                    continue;
+                }
+
+                /*
+                 * C should have meaningful size.
+                 */
+                if (cRatio < 0.80) {
+                    continue;
+                }
+
+                /*
+                 * Avoid an invalid ABC where C completely
+                 * exceeds the origin in the wrong direction.
+                 */
+                const cBeyondOrigin =
+                    isBullish
+                        ? prices[3] < prices[0]
+                        : prices[3] > prices[0];
+
+                if (cBeyondOrigin) {
+                    continue;
+                }
+
+                let abcScore = 0;
+
+                if (
+                    bRetrace >= 0.382 &&
+                    bRetrace <= 0.618
+                ) {
+                    abcScore += 30;
+                } else {
+                    abcScore += 15;
+                }
+
+                if (
+                    cRatio >= 0.95 &&
+                    cRatio <= 1.05
+                ) {
+                    abcScore += 30;
+                } else if (
+                    cRatio >= 1.5 &&
+                    cRatio <= 1.7
+                ) {
+                    abcScore += 25;
+                } else {
+                    abcScore += 10;
+                }
+
+                if (r.RSI !== null) {
+
+                    if (r.RSI < 45) {
+                        abcScore += 20;
+                    } else if (r.RSI < 55) {
+                        abcScore += 10;
+                    }
+                }
+
+                if (
+                    r.Volume_Ratio_30D !== null &&
+                    r.Volume_Ratio_30D < 0.9
+                ) {
+                    abcScore += 20;
+                }
+
+                const total =
+                    Math.min(100, abcScore);
+
+                if (total < 25) {
+                    continue;
+                }
+
+                const invalidation =
+                    isBullish
+                        ? prices[0] * 0.99
+                        : prices[0] * 1.01;
+
+                const entry = prices[3];
+
+                const target =
+                    isBullish
+                        ? entry + wa
+                        : entry - wa;
+
+                const risk =
+                    Math.abs(
+                        entry - invalidation
+                    );
+
+                const reward =
+                    Math.abs(
+                        target - entry
+                    );
+
+                const rr =
+                    risk > 0
+                        ? reward / risk
+                        : 0;
+
+                results.push({
+
+                    degree: deg.name,
+
+                    patternType: 'correction',
+
+                    isBullish,
+
+                    pivots: p,
+
+                    prices,
+
+                    validation: {
+                        rules: {
+                            rule1: true,
+                            rule2: true,
+                            rule3: true
+                        },
+
+                        isDiagonal: false,
+
+                        w2RetracePct:
+                            bRetrace * 100,
+
+                        w3W1Ratio:
+                            cRatio,
+
+                        w5W1Ratio: 0
+                    },
+
+                    scoring: {
+                        ruleScore: 60,
+
+                        fibScore:
+                            total * 0.7,
+
+                        momScore:
+                            total * 0.3,
+
+                        total
+                    },
+
+                    w3target: target,
+
+                    w5target1: null,
+
+                    w5target2: null,
+
+                    invalidation,
+
+                    stopLevel:
+                        invalidation,
+
+                    entry,
+
+                    rr,
+
+                    currentPrice:
+                        closes[closes.length - 1],
+
+                    hasHistory: true
                 });
             }
         }
     }
 
+
+    /*
+     * Nothing found.
+     *
+     * IMPORTANT:
+     * Do NOT cache [].
+     * OHLCV / filters can change and the next scan
+     * should be allowed to retry.
+     */
     if (results.length === 0) {
-        WAVE_CACHE.set(r.symbol, []);
         return [];
     }
-    results.sort((a, b) => b.scoring.total - a.scoring.total);
-    const top = results.slice(0, 3);
-    WAVE_CACHE.set(r.symbol, top);
-    return top;
-}
 
+
+    /*
+     * Highest confidence first.
+     */
+    results.sort(
+        (a, b) =>
+            b.scoring.total -
+            a.scoring.total
+    );
+
+
+    /*
+     * Remove near-duplicate patterns.
+     *
+     * This prevents the same stock from showing
+     * multiple almost-identical counts.
+     */
+    const unique = [];
+
+    for (const result of results) {
+
+        const lastPivot =
+            result.pivots?.[
+                result.pivots.length - 1
+            ]?.idx;
+
+        const duplicate =
+            unique.some(existing => {
+
+                const existingLast =
+                    existing.pivots?.[
+                        existing.pivots.length - 1
+                    ]?.idx;
+
+                return (
+                    existing.patternType ===
+                        result.patternType &&
+
+                    existing.degree ===
+                        result.degree &&
+
+                    Math.abs(
+                        (existingLast ?? 0) -
+                        (lastPivot ?? 0)
+                    ) <= 2
+                );
+            });
+
+        if (!duplicate) {
+            unique.push(result);
+        }
+
+        if (unique.length >= 3) {
+            break;
+        }
+    }
+
+
+    WAVE_CACHE.set(
+        r.symbol,
+        unique
+    );
+
+    return unique;
+}
 function waveNarrative(result) {
     const v = result.validation;
     const bits = [];
@@ -4403,25 +4934,123 @@ function buildWaveCard(result) {
 
 function visibleWaves(items) {
     const f = WAVE_STATE;
+
     return items
         .filter(item => {
+
             const res = item.result;
-            if (res.scoring.total < f.minScore) return false;
-            if (f.sector && item.r.sector !== f.sector) return false;
-            if (f.filter === 'all') return true;
-            if (f.filter === 'active') return res.patternType !== 'correction' || res.scoring.total >= 50;
-            if (f.filter === 'wave3') return res.patternType === 'wave3';
-            if (f.filter === 'wave5') return res.patternType === 'wave5';
-            if (f.filter === 'impulse') return res.patternType === 'impulse' || res.patternType === 'wave3' || res.patternType === 'wave5';
-            if (f.filter === 'correction') return res.patternType === 'correction';
-            if (f.filter === 'diagonal') return res.patternType === 'diagonal';
+
+            if (!res) return false;
+
+            if (
+                res.scoring.total <
+                f.minScore
+            ) {
+                return false;
+            }
+
+            if (
+                f.sector &&
+                item.r.sector !== f.sector
+            ) {
+                return false;
+            }
+
+            /*
+             * Respect Min Bars.
+             */
+            const history =
+                spHist(item.r);
+
+            if (
+                !history ||
+                history.length < f.minBars
+            ) {
+                return false;
+            }
+
+            if (f.filter === 'all') {
+                return true;
+            }
+
+            if (f.filter === 'active') {
+                return (
+                    res.patternType !==
+                        'correction' ||
+                    res.scoring.total >= 50
+                );
+            }
+
+            if (f.filter === 'wave3') {
+                return (
+                    res.patternType ===
+                    'wave3'
+                );
+            }
+
+            if (f.filter === 'wave5') {
+                return (
+                    res.patternType ===
+                    'wave5'
+                );
+            }
+
+            if (f.filter === 'impulse') {
+                return (
+                    res.patternType ===
+                        'impulse' ||
+                    res.patternType ===
+                        'wave3' ||
+                    res.patternType ===
+                        'wave5'
+                );
+            }
+
+            if (f.filter === 'correction') {
+                return (
+                    res.patternType ===
+                    'correction'
+                );
+            }
+
+            if (f.filter === 'diagonal') {
+                return (
+                    res.patternType ===
+                    'diagonal'
+                );
+            }
+
             return true;
         })
+
         .sort((a, b) => {
-            const pa = { wave3: 0, impulse: 1, wave5: 2, diagonal: 3, correction: 4 }[a.result.patternType] ?? 5;
-            const pb = { wave3: 0, impulse: 1, wave5: 2, diagonal: 3, correction: 4 }[b.result.patternType] ?? 5;
-            if (pa !== pb) return pa - pb;
-            return b.result.scoring.total - a.result.scoring.total;
+
+            const priority = {
+                wave3: 0,
+                impulse: 1,
+                wave5: 2,
+                diagonal: 3,
+                correction: 4
+            };
+
+            const pa =
+                priority[
+                    a.result.patternType
+                ] ?? 5;
+
+            const pb =
+                priority[
+                    b.result.patternType
+                ] ?? 5;
+
+            if (pa !== pb) {
+                return pa - pb;
+            }
+
+            return (
+                b.result.scoring.total -
+                a.result.scoring.total
+            );
         });
 }
 
