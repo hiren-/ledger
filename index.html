@@ -4294,10 +4294,11 @@ function waveSpark(result) {
 }
 
 function buildWaveCard(result) {
+    if (!result || !result.r) return '';
     const r = result.r;
-    const v = result.validation;
-    const sc = result.scoring;
-    const isBull = result.isBullish;
+    const v = result.validation || { rules: { rule1: false, rule2: false, rule3: false }, isDiagonal: false, w2RetracePct: 0, w3W1Ratio: 0, w5W1Ratio: 0 };
+    const sc = result.scoring || { total: 0, ruleScore: 0, fibScore: 0, momScore: 0 };
+    const isBull = !!result.isBullish;
 
     const chips = [];
     chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
@@ -4406,65 +4407,71 @@ function visibleWaves(items) {
 }
 
 /* --- Chunked wave paint (keeps the UI responsive) --- */
+/* --- Chunked wave paint (keeps the UI responsive) --- */
 async function paintWaves() {
     const grid = document.getElementById('waveGrid');
     if (!grid || WAVES_RENDERING) return;
     WAVES_RENDERING = true;
 
-    grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">Scanning price history for Elliott Wave structures…</div>`;
-    await new Promise(res => setTimeout(res, 0));
+    try {
+        grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">Scanning price history for Elliott Wave structures…</div>`;
+        await new Promise(res => setTimeout(res, 0));
 
-    const allItems = [];
-    const totalStocks = RAW.length;
+        const allItems = [];
+        const totalStocks = RAW.length;
 
-    for (let i = 0; i < totalStocks; i++) {
-        const r = RAW[i];
-        const patterns = detectWavePatterns(r);
-        for (const res of patterns) allItems.push({ r, result: res });
-        if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
-    }
-
-    const counts = { wave3: 0, wave5: 0, impulse: 0, correction: 0, diagonal: 0 };
-    let histCount = 0;
-    allItems.forEach(item => {
-        const t = item.result.patternType;
-        if (counts[t] !== undefined) counts[t]++;
-        if (item.result.hasHistory) histCount++;
-    });
-
-    const badge = document.getElementById('waveTabBadge');
-    if (badge) badge.textContent = counts.wave3 + counts.wave5 + counts.impulse;
-
-    const mode = document.getElementById('waveMode');
-    if (mode) {
-        if (histCount > 0) {
-            mode.innerHTML = `Data mode: <b>FULL FIDELITY</b> — ${allItems.length} wave pattern${allItems.length===1?'':'s'} detected from real price history using ATR-adaptive ZigZag pivots.`;
-        } else if (!OHLCV_DATA || OHLCV_DATA.unavailable) {
-            mode.innerHTML = `Data mode: <b>NO DATA</b> — <code>index.json</code> is required for wave detection.`;
-        } else {
-            mode.innerHTML = `Data mode: <b>SCANNED</b> — OHLCV loaded, but no valid Elliott Wave patterns passed the current criteria. Try lowering the minimum confidence or adjusting the pattern filter.`;
+        for (let i = 0; i < totalStocks; i++) {
+            const r = RAW[i];
+            const patterns = detectWavePatterns(r);
+            for (const res of patterns) allItems.push({ r, result: res });
+            if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
         }
+
+        const counts = { wave3: 0, wave5: 0, impulse: 0, correction: 0, diagonal: 0 };
+        let histCount = 0;
+        allItems.forEach(item => {
+            const t = item.result.patternType;
+            if (counts[t] !== undefined) counts[t]++;
+            if (item.result.hasHistory) histCount++;
+        });
+
+        const badge = document.getElementById('waveTabBadge');
+        if (badge) badge.textContent = counts.wave3 + counts.wave5 + counts.impulse;
+
+        const mode = document.getElementById('waveMode');
+        if (mode) {
+            if (histCount > 0) {
+                mode.innerHTML = `Data mode: <b>FULL FIDELITY</b> — ${allItems.length} wave pattern${allItems.length===1?'':'s'} detected from real price history using ATR-adaptive ZigZag pivots.`;
+            } else if (!OHLCV_DATA || OHLCV_DATA.unavailable) {
+                mode.innerHTML = `Data mode: <b>NO DATA</b> — <code>index.json</code> is required for wave detection.`;
+            } else {
+                mode.innerHTML = `Data mode: <b>SCANNED</b> — OHLCV loaded, but no valid Elliott Wave patterns passed the current criteria. Try lowering the minimum confidence or adjusting the pattern filter.`;
+            }
+        }
+
+        const statsEl = document.getElementById('waveStats');
+        if (statsEl) {
+            const defs = [
+                ['Wave 3',   counts.wave3,      'var(--violet)'],
+                ['Wave 5',   counts.wave5,      'var(--coral)'],
+                ['Impulse',  counts.impulse,    'var(--teal)'],
+                ['ABC',      counts.correction, 'var(--amber)'],
+                ['Diagonal', counts.diagonal,   'var(--blue)'],
+                ['Total',    allItems.length,   'var(--text)'],
+            ];
+            statsEl.innerHTML = defs.map(d => `<div class="wave-stat" style="border-top:2px solid ${d[2]};"><div class="sv">${d[1]}</div><div class="sl">${d[0]}</div></div>`).join('');
+        }
+
+        const vis = visibleWaves(allItems).slice(0, 48);
+        grid.innerHTML = vis.length
+            ? vis.map(item => buildWaveCard(item.result)).join('')
+            : `<div class="today-empty" style="grid-column:1/-1;">No wave patterns detected with the current filters. Lower the minimum confidence or ensure <code>index.json</code> is present.</div>`;
+    } catch (e) {
+        console.error('paintWaves failed:', e);
+        grid.innerHTML = `<div class="today-empty" style="grid-column:1/-1;">Wave scan error: ${e.message}. Check the console for details.</div>`;
+    } finally {
+        WAVES_RENDERING = false;
     }
-
-    const statsEl = document.getElementById('waveStats');
-    if (statsEl) {
-        const defs = [
-            ['Wave 3',   counts.wave3,      'var(--violet)'],
-            ['Wave 5',   counts.wave5,      'var(--coral)'],
-            ['Impulse',  counts.impulse,    'var(--teal)'],
-            ['ABC',      counts.correction, 'var(--amber)'],
-            ['Diagonal', counts.diagonal,   'var(--blue)'],
-            ['Total',    allItems.length,   'var(--text)'],
-        ];
-        statsEl.innerHTML = defs.map(d => `<div class="wave-stat" style="border-top:2px solid ${d[2]};"><div class="sv">${d[1]}</div><div class="sl">${d[0]}</div></div>`).join('');
-    }
-
-    const vis = visibleWaves(allItems).slice(0, 48);
-    grid.innerHTML = vis.length
-        ? vis.map(buildWaveCard.bind(null)).join('')
-        : `<div class="today-empty" style="grid-column:1/-1;">No wave patterns detected with the current filters. Lower the minimum confidence or ensure <code>index.json</code> is present.</div>`;
-
-    WAVES_RENDERING = false;
 }
 
 function queueWaveRepaint() {
