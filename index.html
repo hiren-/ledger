@@ -3306,24 +3306,29 @@ OHLCV DATA INTEGRATION (lazy load)
 ============================================================ */
 let OHLCV_DATA = null;
 let OHLCV_LOADING = false;
+let OHLCV_DATA = null;
+let OHLCV_LOADING_PROMISE = null;
+
 async function loadOHLCVData() {
-if (OHLCV_DATA || OHLCV_LOADING) return;
-OHLCV_LOADING = true;
-try {
-const res = await fetch('index.json', { cache: 'no-store' });
-if (!res.ok) throw new Error('HTTP ' + res.status);
-const data = await res.json();
-OHLCV_DATA = {
-prices: data.prices || {},
-meta: (data.fetch_meta || []).reduce((acc, m) => { acc[m.ticker] = m; return acc; }, {}),
-generated_at: data.generated_at,
-};
-} catch (e) {
-console.info('OHLCV data not available:', e.message);
-OHLCV_DATA = { prices: {}, meta: {}, generated_at: null, unavailable: true };
-} finally {
-OHLCV_LOADING = false;
-}
+    if (OHLCV_DATA) return OHLCV_DATA;
+    if (OHLCV_LOADING_PROMISE) return OHLCV_LOADING_PROMISE;
+    OHLCV_LOADING_PROMISE = (async () => {
+        try {
+            const res = await fetch('index.json', { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            OHLCV_DATA = {
+                prices: data.prices || {},
+                meta: (data.fetch_meta || []).reduce((acc, m) => { acc[m.ticker] = m; return acc; }, {}),
+                generated_at: data.generated_at,
+            };
+        } catch (e) {
+            console.info('OHLCV data not available:', e.message);
+            OHLCV_DATA = { prices: {}, meta: {}, generated_at: null, unavailable: true };
+        }
+        return OHLCV_DATA;
+    })();
+    return OHLCV_LOADING_PROMISE;
 }
 function getOHLCVHistory(ticker, limit = Infinity) {
 if (!OHLCV_DATA) return [];
@@ -4484,10 +4489,15 @@ function paintWaves() {
     if (badge) badge.textContent = counts.wave3 + counts.wave5 + counts.impulse;
 
     const mode = document.getElementById('waveMode');
-    if (mode) mode.innerHTML = histCount > 0
-        ? `Data mode: <b>FULL FIDELITY</b> — ${histCount} patterns detected from real price history using ATR-adaptive ZigZag pivots.`
-        : `Data mode: <b>NO DATA</b> — <code>index.json</code> required for wave detection. Add OHLCV history to enable this tab.`;
-
+    if (mode) {
+        if (histCount > 0) {
+            mode.innerHTML = `Data mode: <b>FULL FIDELITY</b> — ${allItems.length} wave pattern${allItems.length===1?'':'s'} detected from real price history using ATR-adaptive ZigZag pivots.`;
+        } else if (!OHLCV_DATA || OHLCV_DATA.unavailable) {
+            mode.innerHTML = `Data mode: <b>NO DATA</b> — <code>index.json</code> is required for wave detection. Add OHLCV history to enable this tab.`;
+        } else {
+            mode.innerHTML = `Data mode: <b>SCANNED</b> — OHLCV history loaded, but no valid Elliott Wave patterns passed the current criteria. Try lowering the minimum confidence or adjusting the pattern filter.`;
+        }
+    }
     const statsEl = document.getElementById('waveStats');
     if (statsEl) {
         const defs = [
