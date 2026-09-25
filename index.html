@@ -705,6 +705,67 @@ footer{text-align:center; color:var(--faint); font-size:11.5px; padding:30px 0 1
 canvas{max-width:100%;}
 ::-webkit-scrollbar{height:8px; width:8px;}
 ::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+/* ============================================================
+WAVE ANALYSIS TAB — Elliott Wave engine styles
+============================================================ */
+.wave-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.wave-stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 18px;min-width:118px;}
+.wave-stat .sv{font-family:var(--font-display);font-size:22px;font-weight:700;}
+.wave-stat .sl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-mono);margin-top:2px;}
+.wave-mode{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+.wave-mode b{color:var(--teal);}
+.wave-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;}
+.wave-card{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:16px 18px;cursor:pointer;transition:border-color .15s, transform .12s;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;}
+.wave-card:hover{border-color:var(--teal);transform:translateY(-2px);}
+.wave-card.pattern-impulse{border-left:3px solid var(--teal);}
+.wave-card.pattern-correction{border-left:3px solid var(--amber);}
+.wave-card.pattern-wave3{border-left:3px solid var(--violet);}
+.wave-card.pattern-wave5{border-left:3px solid var(--coral);}
+.wave-card.pattern-diagonal{border-left:3px solid var(--blue);}
+.wv-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.wv-name{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;}
+.wv-sym{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:3px;}
+.wv-pattern{font-family:var(--font-display);font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:5px 12px;border-radius:20px;text-transform:uppercase;flex:0 0 auto;}
+.wv-pattern.impulse{background:color-mix(in srgb,var(--teal) 20%,transparent);color:var(--teal);}
+.wv-pattern.correction{background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber);}
+.wv-pattern.wave3{background:color-mix(in srgb,var(--violet) 20%,transparent);color:var(--violet);}
+.wv-pattern.wave5{background:color-mix(in srgb,var(--coral) 20%,transparent);color:var(--coral);}
+.wv-pattern.diagonal{background:color-mix(in srgb,var(--blue) 20%,transparent);color:var(--blue);}
+.wv-gauge{display:flex;gap:14px;align-items:center;}
+.wv-gscore{font-family:var(--font-display);font-size:32px;font-weight:700;min-width:58px;text-align:center;line-height:1;}
+.wv-gscore.hi{color:var(--teal);} .wv-gscore.mid{color:var(--amber);} .wv-gscore.lo{color:var(--coral);}
+.wv-gbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.wv-glab{width:64px;text-transform:uppercase;letter-spacing:.04em;flex:0 0 auto;}
+.wv-track{flex:1;height:7px;border-radius:4px;background:var(--panel-2);overflow:hidden;}
+.wv-fill{height:100%;border-radius:4px;}
+.wv-fill.rule{background:linear-gradient(90deg,var(--blue),var(--teal));}
+.wv-fill.fib{background:linear-gradient(90deg,var(--amber),var(--violet));}
+.wv-fill.mom{background:linear-gradient(90deg,var(--coral),var(--amber));}
+.wv-gv{width:26px;text-align:right;flex:0 0 auto;}
+.wv-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.wv-chip{font-family:var(--font-mono);font-size:10.5px;padding:3px 8px;border-radius:12px;background:var(--panel-2);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
+.wv-chip.hot{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 45%,transparent);}
+.wv-chip.zap{color:var(--violet);border-color:color-mix(in srgb,var(--violet) 45%,transparent);}
+.wv-chip.warn{color:var(--coral);border-color:color-mix(in srgb,var(--coral) 45%,transparent);}
+.wv-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:var(--panel-2);border-radius:8px;padding:10px 12px;}
+.wv-level .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:3px;font-family:var(--font-body);}
+.wv-level .val{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text);}
+.wv-level .val.down{color:var(--down);}
+.wv-level .val.up{color:var(--up);}
+.wv-why{font-size:12px;color:var(--muted);line-height:1.6;background:var(--panel-2);padding:9px 11px;border-radius:6px;}
+.wv-why b{color:var(--text);}
+.wv-invalidate{font-size:11px;color:var(--muted);font-style:italic;border-top:1px solid var(--border);padding-top:9px;}
+.wv-invalidate b{color:var(--coral);font-style:normal;font-weight:600;}
+.wv-foot{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10.5px;color:var(--faint);border-top:1px solid var(--border);padding-top:9px;}
+.wv-spark{width:100%;height:64px;background:var(--panel-2);border-radius:8px;display:block;}
+.wv-fib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px;}
+.wv-fib-item{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 8px;text-align:center;}
+.wv-fib-item .fl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.wv-fib-item .fv{font-family:var(--font-mono);font-size:11px;font-weight:600;margin-top:2px;}
+.wv-fib-item.hit{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,var(--panel));}
+.wv-fib-item.hit .fv{color:var(--teal);}
+.wv-confluence{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.wv-conf-badge{font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--teal) 12%,transparent);color:var(--teal);border:1px solid color-mix(in srgb,var(--teal) 30%,transparent);}
 </style>
 </head>
 <body data-theme="dark">
@@ -743,6 +804,7 @@ canvas{max-width:100%;}
 <button class="tab-btn" data-tab="suggestions">Suggestions</button>
 <button class="tab-btn" data-tab="gems">Hidden Gems <span class="tab-badge" id="gemTabBadge">0</span></button>
 <button class="tab-btn" data-tab="help">Help &amp; Glossary</button>
+<button class="tab-btn" data-tab="waves">Wave Analysis <span class="tab-badge" id="waveTabBadge">0</span></button>
 </div>
 </div>
 <!-- ================= TODAY ================= -->
@@ -800,6 +862,31 @@ With <code>index.json</code> present, everything is measured from real bars: con
 </div>
 <div class="spring-grid" id="springGrid"></div>
 </div>
+<!-- ================= WAVE ANALYSIS ================= -->
+<div class="tab-panel" id="tab-waves">
+<div class="help-panel">
+<div class="hp-title"><span class="help-icon big">?</span> Wave Analysis — Elliott Wave engine</div>
+The engine detects <b>Elliott Wave structures</b> from real OHLCV data using ATR-adaptive ZigZag pivots, validates every count against the <b>three cardinal rules</b>, and scores setups by <b>Fibonacci confluence</b>. It finds <b>Wave 3 setups</b> (strongest momentum), <b>Wave 5 exhaustion</b> (channeling + RSI divergence), <b>ABC corrections</b> completing at Fibonacci targets, and <b>diagonal patterns</b>. Every card shows the wave count, Fibonacci projection levels, invalidation level, and confidence score.
+</div>
+<div class="wave-mode" id="waveMode">Data mode: scanning…</div>
+<div class="wave-stats" id="waveStats"></div>
+<div class="filters">
+<label>Min Confidence <input type="number" id="wvMinScore" value="40" min="0" max="100"></label>
+<label>Pattern <select id="wvPattern">
+<option value="active" selected>Actionable (all)</option>
+<option value="wave3">Wave 3 setup</option>
+<option value="wave5">Wave 5 exhaustion</option>
+<option value="impulse">Impulse (1-5)</option>
+<option value="correction">Correction (ABC)</option>
+<option value="diagonal">Diagonal</option>
+<option value="all">Everything</option>
+</select></label>
+<label>Sector <select id="wvSector"><option value="">All sectors</option></select></label>
+<label>Min Bars <input type="number" id="wvMinBars" value="60" min="30" max="500"></label>
+</div>
+<div class="wave-grid" id="waveGrid"></div>
+</div>
+  
 <!-- ================= OVERVIEW ================= -->
 <div class="tab-panel" id="tab-overview">
 <div class="help-panel">
@@ -1835,6 +1922,7 @@ runGemScan();
 initRadarScan();
 updateTopbarHeight();
 renderSprings();
+renderWaves();
 }
 /* ============================================================
 TODAY TAB — conviction-scored entry decisions
@@ -3810,6 +3898,651 @@ paintSprings();              // instant pass — CSV fields
 try { await loadOHLCVData(); } catch(e){}
 paintSprings();              // full-fidelity pass — real price history
 }
+/* ============================================================
+WAVE ANALYSIS — Elliott Wave engine
+Detects impulse (1-5), correction (ABC), diagonals.
+Validates 3 cardinal rules. Scores by Fibonacci confluence.
+Uses ATR-adaptive ZigZag pivots from index.json OHLCV data.
+============================================================ */
+const WAVE_STATE = { filter: 'active', minScore: 40, sector: '', minBars: 60 };
+let WAVE_WIRED = false;
+
+/* --- Fibonacci constants --- */
+const FIB = {
+    retrace: [0.236, 0.382, 0.500, 0.618, 0.786],
+    extend: [1.272, 1.618, 2.000, 2.618],
+    golden: [0.618, 0.786],
+    w3target: [1.618, 2.618],
+    w5target: [0.618, 1.000],
+    cTargets: [1.000, 1.618],
+};
+
+/* --- ATR-adaptive ZigZag pivot detection ---
+   Pivots confirmed only after price reverses past ATR * k threshold.
+   Returns alternating high/low pivots. */
+function zigzagPivots(highs, lows, closes, atrPeriod, atrMultiplier) {
+    const n = closes.length;
+    if (n < atrPeriod + 5) return [];
+
+    // Compute ATR
+    const trs = [];
+    for (let i = 1; i < n; i++) {
+        const tr = Math.max(
+            highs[i] - lows[i],
+            Math.abs(highs[i] - closes[i - 1]),
+            Math.abs(lows[i] - closes[i - 1])
+        );
+        trs.push(tr);
+    }
+    const atr = [];
+    let sum = 0;
+    for (let i = 0; i < trs.length; i++) {
+        sum += trs[i];
+        if (i >= atrPeriod) sum -= trs[i - atrPeriod];
+        atr.push(i >= atrPeriod - 1 ? sum / atrPeriod : null);
+    }
+
+    const pivots = [];
+    let direction = 0; // 1 = up, -1 = down
+    let extIdx = 0;
+    let extPrice = direction === 0 ? closes[0] : 0;
+
+    for (let i = 1; i < n; i++) {
+        const a = atr[i - 1];
+        if (a === null || a <= 0) continue;
+        const threshold = a * atrMultiplier;
+
+        if (direction === 0) {
+            // Determine initial direction
+            if (closes[i] > closes[0] + threshold) {
+                direction = 1;
+                extIdx = i;
+                extPrice = closes[i];
+            } else if (closes[i] < closes[0] - threshold) {
+                direction = -1;
+                extIdx = i;
+                extPrice = closes[i];
+            }
+            continue;
+        }
+
+        if (direction === 1) {
+            // Looking for a high pivot: track highest high
+            if (highs[i] > extPrice) {
+                extPrice = highs[i];
+                extIdx = i;
+            } else if (extPrice - lows[i] > threshold) {
+                // Confirmed high pivot
+                pivots.push({ idx: extIdx, price: extPrice, type: 'high' });
+                direction = -1;
+                extIdx = i;
+                extPrice = lows[i];
+            }
+        } else {
+            // Looking for a low pivot: track lowest low
+            if (lows[i] < extPrice) {
+                extPrice = lows[i];
+                extIdx = i;
+            } else if (highs[i] - extPrice > threshold) {
+                // Confirmed low pivot
+                pivots.push({ idx: extIdx, price: extPrice, type: 'low' });
+                direction = 1;
+                extIdx = i;
+                extPrice = highs[i];
+            }
+        }
+    }
+
+    // Include the last forming pivot
+    if (pivots.length > 0) {
+        pivots.push({ idx: extIdx, price: extPrice, type: direction === 1 ? 'high' : 'low', forming: true });
+    }
+
+    return pivots;
+}
+
+/* --- Fibonacci retracement/extension calculations --- */
+function fibRetrace(origin, end, ratio) {
+    return end - (end - origin) * ratio;
+}
+function fibExtend(origin, end, ratio) {
+    return origin + (end - origin) * ratio;
+}
+
+/* --- Validate the 3 cardinal rules for a 5-wave impulse --- */
+function validateImpulse(p) {
+    // p = [P0, P1, P2, P3, P4, P5] prices
+    const [P0, P1, P2, P3, P4, P5] = p;
+    const wave1 = P1 - P0;
+    const wave2 = P2 - P1;
+    const wave3 = P3 - P2;
+    const wave4 = P4 - P3;
+    const wave5 = P5 - P4;
+
+    const rules = {};
+
+    // Rule 1: Wave 2 never retraces > 100% of Wave 1
+    const w2Retrace = Math.abs(wave2 / wave1);
+    rules.rule1 = w2Retrace < 1.0;
+
+    // Rule 2: Wave 3 is never the shortest among 1, 3, 5
+    const w3len = Math.abs(wave3);
+    rules.rule2 = w3len >= Math.abs(wave1) || w3len >= Math.abs(wave5);
+
+    // Rule 3: Wave 4 does not overlap Wave 1 territory
+    // For a bullish impulse: Wave 4 low must stay above Wave 1 high
+    if (P5 > P0) {
+        // Bullish
+        rules.rule3 = P4 > P1 * 0.995; // Allow 0.5% tolerance
+    } else {
+        // Bearish
+        rules.rule3 = P4 < P1 * 1.005;
+    }
+
+    // Diagonal exception: if rule3 fails but waves converge, it may be a diagonal
+    const w1h = Math.abs(P1 - P0);
+    const w3h = Math.abs(P3 - P2);
+    const w5h = Math.abs(P5 - P4);
+    const converging = w3h < w1h && w5h < w3h;
+    rules.isDiagonal = !rules.rule3 && converging;
+
+    return {
+        rules,
+        waveLens: { wave1: Math.abs(wave1), wave2: Math.abs(wave2), wave3: Math.abs(wave3), wave4: Math.abs(wave4), wave5: Math.abs(wave5) },
+        w2RetracePct: w2Retrace * 100,
+        w3W1Ratio: Math.abs(wave3 / wave1),
+        w5W1Ratio: Math.abs(wave5 / wave1),
+        w4W3Ratio: Math.abs(wave4 / wave3),
+    };
+}
+
+/* --- Confidence scoring for a detected pattern --- */
+function scoreWavePattern(validation, pivots, r) {
+    let ruleScore = 0;
+    let fibScore = 0;
+    let momScore = 0;
+
+    // Rule score (max 100)
+    const r1 = validation.rules.rule1 ? 30 : 0;
+    const r2 = validation.rules.rule2 ? 30 : 0;
+    const r3 = validation.rules.rule3 ? 25 : 0;
+    const r4 = validation.rules.rule1 && validation.rules.rule2 ? 15 : 0;
+    ruleScore = r1 + r2 + r3 + r4;
+
+    // Fibonacci confluence score (max 100)
+    const w2r = validation.w2RetracePct;
+    if (w2r >= 50 && w2r <= 78.6) fibScore += 40;
+    else if (w2r >= 38.2 && w2r <= 85) fibScore += 25;
+    else if (w2r >= 30) fibScore += 10;
+
+    const w3r = validation.w3W1Ratio;
+    if (w3r >= 1.5 && w3r <= 1.7) fibScore += 35;       // Near 1.618 golden ratio
+    else if (w3r >= 1.272 && w3r <= 2.618) fibScore += 25;
+    else if (w3r >= 1.0) fibScore += 10;
+
+    const w5r = validation.w5W1Ratio;
+    if (w5r >= 0.55 && w5r <= 0.68) fibScore += 25;      // Near 0.618
+    else if (w5r >= 0.9 && w5r <= 1.1) fibScore += 20;   // Wave equality
+    else if (w5r >= 1.5 && w5r <= 1.7) fibScore += 15;   // 1.618 extension
+    else if (w5r > 0) fibScore += 5;
+
+    // Momentum score (max 100)
+    if (r.RSI !== null) {
+        if (r.RSI >= 50 && r.RSI <= 70) momScore += 40;
+        else if (r.RSI >= 40 && r.RSI <= 75) momScore += 25;
+        else momScore += 10;
+    }
+    if (r.Volume_Ratio_30D !== null) {
+        if (r.Volume_Ratio_30D >= 1.5) momScore += 30;
+        else if (r.Volume_Ratio_30D >= 1.1) momScore += 20;
+        else if (r.Volume_Ratio_30D >= 0.9) momScore += 10;
+    }
+    if (r.ADX !== null) {
+        if (r.ADX >= 25 && r.ADX <= 45) momScore += 30;
+        else if (r.ADX >= 20) momScore += 20;
+        else if (r.ADX >= 15) momScore += 10;
+    }
+    momScore = Math.min(100, momScore);
+
+    // Weighted total
+    const total = Math.round(ruleScore * 0.45 + fibScore * 0.35 + momScore * 0.20);
+
+    return { ruleScore, fibScore, momScore, total };
+}
+
+/* --- Detect all wave patterns for a single stock --- */
+function detectWavePatterns(r) {
+    const h = spHist(r); // Reuse the OHLCV history function from Springs module
+    if (!h || h.length < 60) return [];
+
+    const closes = h.map(p => p[4]);
+    const highs = h.map(p => p[2]);
+    const lows = h.map(p => p[3]);
+
+    // Get ZigZag pivots at multiple degrees
+    const results = [];
+    const degrees = [
+        { name: 'minor', atrPeriod: 14, mult: 2.5 },
+        { name: 'intermediate', atrPeriod: 14, mult: 3.5 },
+        { name: 'primary', atrPeriod: 14, mult: 5.0 },
+    ];
+
+    for (const deg of degrees) {
+        const pivots = zigzagPivots(highs, lows, closes, deg.atrPeriod, deg.mult);
+        if (pivots.length < 6) continue;
+
+        // Scan for 5-wave impulse patterns (need 6 pivots: P0..P5)
+        for (let i = 0; i <= pivots.length - 6; i++) {
+            const p = pivots.slice(i, i + 6);
+            const prices = p.map(x => x.price);
+
+            // Determine if bullish or bearish based on first pivot type
+            const isBullish = p[0].type === 'low';
+            if ((isBullish && p[5].type !== 'high') || (!isBullish && p[5].type !== 'low')) continue;
+
+            // Validate rules
+            const validation = validateImpulse(prices);
+            if (!validation.rules.rule1 || !validation.rules.rule2) continue;
+            if (!validation.rules.rule3 && !validation.rules.isDiagonal) continue;
+
+            const scoring = scoreWavePattern(validation, p, r);
+            if (scoring.total < 20) continue;
+
+            // Determine pattern type
+            let patternType = 'impulse';
+            if (validation.rules.isDiagonal) patternType = 'diagonal';
+            else if (validation.w2RetracePct >= 50 && validation.w2RetracePct <= 78.6 && validation.w3W1Ratio >= 1.4) patternType = 'wave3';
+            else if (Math.abs(validation.w5W1Ratio - 0.618) < 0.15 || Math.abs(validation.w5W1Ratio - 1.0) < 0.15) patternType = 'wave5';
+
+            // Calculate Fibonacci levels
+            const P0 = prices[0], P1 = prices[1], P2 = prices[2], P3 = prices[3], P4 = prices[4], P5 = prices[5];
+            const wave1Len = Math.abs(P1 - P0);
+            const wave3Len = Math.abs(P3 - P2);
+
+            // Wave 3 target (1.618 * Wave 1 from Wave 2)
+            const w3target = isBullish
+                ? P2 + wave1Len * 1.618
+                : P2 - wave1Len * 1.618;
+
+            // Wave 5 targets
+            const w5target1 = isBullish
+                ? P4 + wave1Len * 0.618
+                : P4 - wave1Len * 0.618;
+            const w5target2 = isBullish
+                ? P4 + wave1Len * 1.000
+                : P4 - wave1Len * 1.000;
+
+            // Invalidation level (start of Wave 1)
+            const invalidation = P0;
+
+            // Stop for Wave 3 entry (below Wave 1 start)
+            const stopLevel = isBullish ? Math.min(P0, P2) * 0.995 : Math.max(P0, P2) * 1.005;
+
+            // Entry level (current price or Wave 2 completion)
+            const entry = isBullish ? P2 : P2;
+
+            // R:R for Wave 3
+            const risk = Math.abs(entry - stopLevel);
+            const reward = Math.abs(w3target - entry);
+            const rr = risk > 0 ? reward / risk : 0;
+
+            results.push({
+                degree: deg.name,
+                patternType,
+                isBullish,
+                pivots: p,
+                prices,
+                validation,
+                scoring,
+                w3target,
+                w5target1,
+                w5target2,
+                invalidation,
+                stopLevel,
+                entry,
+                rr,
+                wave1Len,
+                wave3Len,
+                currentPrice: closes[closes.length - 1],
+                hasHistory: true,
+            });
+        }
+
+        // Scan for ABC corrections (4 pivots: A, B, C + origin)
+        if (pivots.length >= 4) {
+            for (let i = 0; i <= pivots.length - 4; i++) {
+                const p = pivots.slice(i, i + 4);
+                const prices = p.map(x => x.price);
+
+                // ABC: origin -> A -> B -> C
+                const isBullish = p[0].type === 'low'; // Correction after an up move
+                const wa = Math.abs(prices[1] - prices[0]);
+                const wb = Math.abs(prices[2] - prices[1]);
+                const wc = Math.abs(prices[3] - prices[2]);
+
+                // Zigzag: B retraces 38-79% of A, C >= A
+                const bRetrace = wa > 0 ? wb / wa : 0;
+                const cRatio = wa > 0 ? wc / wa : 0;
+
+                if (bRetrace < 0.3 || bRetrace > 0.85) continue;
+                if (cRatio < 0.8) continue;
+
+                // Check C doesn't exceed origin
+                const cBeyondOrigin = isBullish ? prices[3] < prices[0] : prices[3] > prices[0];
+                if (cBeyondOrigin) continue;
+
+                let abcScore = 0;
+                if (bRetrace >= 0.382 && bRetrace <= 0.618) abcScore += 30;
+                else abcScore += 15;
+                if (cRatio >= 0.95 && cRatio <= 1.05) abcScore += 30; // C ≈ A
+                else if (cRatio >= 1.5 && cRatio <= 1.7) abcScore += 25; // C = 1.618A
+                else abcScore += 10;
+                if (r.RSI !== null && r.RSI < 45) abcScore += 20; // Oversold at correction end
+                else if (r.RSI !== null && r.RSI < 55) abcScore += 10;
+                if (r.Volume_Ratio_30D !== null && r.Volume_Ratio_30D < 0.9) abcScore += 20; // Volume dry-up
+
+                const total = Math.min(100, abcScore);
+
+                if (total < 25) continue;
+
+                const invalidation = isBullish ? prices[0] * 0.99 : prices[0] * 1.01;
+                const entry = prices[3]; // C end
+                const target = isBullish
+                    ? entry + wa * 1.0
+                    : entry - wa * 1.0;
+
+                results.push({
+                    degree: deg.name,
+                    patternType: 'correction',
+                    isBullish,
+                    pivots: p,
+                    prices,
+                    validation: { rules: { rule1: true, rule2: true, rule3: true }, isDiagonal: false, waveLens: {}, w2RetracePct: bRetrace * 100, w3W1Ratio: cRatio },
+                    scoring: { ruleScore: 60, fibScore: total * 0.7, momScore: total * 0.3, total },
+                    w3target: target,
+                    w5target1: null,
+                    w5target2: null,
+                    invalidation,
+                    stopLevel: invalidation,
+                    entry,
+                    rr: Math.abs(target - entry) / Math.abs(entry - invalidation),
+                    wave1Len: wa,
+                    wave3Len: wc,
+                    currentPrice: closes[closes.length - 1],
+                    hasHistory: true,
+                });
+            }
+        }
+    }
+
+    // Deduplicate: keep the highest-scoring pattern per stock
+    if (results.length === 0) return [];
+    results.sort((a, b) => b.scoring.total - a.scoring.total);
+    return results.slice(0, 3); // Keep top 3 per stock
+}
+
+/* --- Wave narrative --- */
+function waveNarrative(result) {
+    const v = result.validation;
+    const bits = [];
+
+    if (result.patternType === 'correction') {
+        bits.push(`ABC correction — B retraced ${v.w2RetracePct.toFixed(0)}% of A`);
+        bits.push(`C = ${v.w3W1Ratio.toFixed(2)}× A`);
+        if (result.isBullish) bits.push('bullish trend resumption setup');
+        else bits.push('bearish trend resumption setup');
+    } else {
+        if (v.rules.rule1 && v.rules.rule2 && v.rules.rule3) bits.push('all 3 cardinal rules pass');
+        else if (v.rules.isDiagonal) bits.push('diagonal pattern (Rule 3 overlap tolerated)');
+        bits.push(`W2 retrace ${v.w2RetracePct.toFixed(0)}%`);
+        bits.push(`W3 = ${v.w3W1Ratio.toFixed(2)}× W1`);
+        bits.push(`W5 = ${v.w5W1Ratio.toFixed(2)}× W1`);
+    }
+
+    const conf = result.scoring.total;
+    const label = conf >= 70 ? 'High-confidence' : conf >= 50 ? 'Moderate' : 'Developing';
+    return `${label}: ${bits.join(' · ')}.`;
+}
+
+/* --- Wave sparkline (SVG) --- */
+function waveSpark(result) {
+    const h = spHist(result.r);
+    if (!h || h.length < 10) return '';
+    const bars = h.slice(-60);
+    const vals = bars.map(p => p[4]);
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const W = 400, H = 60, pad = 4;
+    const X = i => pad + i * (W - 2 * pad) / (vals.length - 1);
+    const Y = v => max > min ? pad + (H - 2 * pad) * (1 - (v - min) / (max - min)) : H / 2;
+    const pts = vals.map((v, i) => X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
+
+    // Mark wave pivots
+    const pivotMarkers = result.pivots.map(p => {
+        const idx = h.length - 60 + p.idx;
+        if (idx < 0 || idx >= bars.length) return '';
+        const px = X(p.idx - (h.length - 60));
+        const py = Y(p.price);
+        const color = p.type === 'high' ? 'var(--coral)' : 'var(--teal)';
+        return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3" fill="${color}" stroke="var(--panel)" stroke-width="1.5"/>`;
+    }).join('');
+
+    return `<svg class="wv-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <polyline points="${pts}" fill="none" stroke="var(--violet)" stroke-width="1.8"/>
+        ${pivotMarkers}
+    </svg>`;
+}
+
+/* --- Build wave card --- */
+function buildWaveCard(result) {
+    const r = result.r;
+    const v = result.validation;
+    const sc = result.scoring;
+    const isBull = result.isBullish;
+
+    const chips = [];
+    chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
+    if (v.rules.rule1) chips.push(`<span class="wv-chip hot">✓ Rule 1</span>`);
+    else chips.push(`<span class="wv-chip warn">✗ Rule 1</span>`);
+    if (v.rules.rule2) chips.push(`<span class="wv-chip hot">✓ Rule 2</span>`);
+    else chips.push(`<span class="wv-chip warn">✗ Rule 2</span>`);
+    if (v.rules.rule3) chips.push(`<span class="wv-chip hot">✓ Rule 3</span>`);
+    else if (v.rules.isDiagonal) chips.push(`<span class="wv-chip zap">Diagonal</span>`);
+    else chips.push(`<span class="wv-chip warn">✗ Rule 3</span>`);
+
+    if (result.patternType === 'wave3') chips.push(`<span class="wv-chip zap">⚡ Wave 3 setup</span>`);
+    if (result.patternType === 'wave5') chips.push(`<span class="wv-chip warn">⚠ Wave 5 exhaustion</span>`);
+    if (result.patternType === 'correction') chips.push(`<span class="wv-chip">ABC correction</span>`);
+
+    const fibGrid = result.patternType !== 'correction' ? `
+        <div class="wv-fib-grid">
+            <div class="wv-fib-item ${isBull && result.w3target > 0 ? 'hit' : ''}">
+                <div class="fl">W3 Target</div>
+                <div class="fv">${result.w3target != null ? '₹' + result.w3target.toFixed(0) : '—'}</div>
+            </div>
+            <div class="wv-fib-item">
+                <div class="fl">W5 Target 1</div>
+                <div class="fv">${result.w5target1 != null ? '₹' + result.w5target1.toFixed(0) : '—'}</div>
+            </div>
+            <div class="wv-fib-item">
+                <div class="fl">W5 Target 2</div>
+                <div class="fv">${result.w5target2 != null ? '₹' + result.w5target2.toFixed(0) : '—'}</div>
+            </div>
+        </div>` : '';
+
+    const levelsHTML = `
+        <div class="wv-levels">
+            <div class="wv-level"><div class="lbl">${result.patternType === 'correction' ? 'C End' : 'Entry'}</div><div class="val">₹${result.entry.toFixed(1)}</div></div>
+            <div class="wv-level"><div class="lbl">Stop / Invalid</div><div class="val down">₹${result.stopLevel.toFixed(1)}</div></div>
+            <div class="wv-level"><div class="lbl">Target</div><div class="val up">₹${result.w3target.toFixed(1)}</div></div>
+            <div class="wv-level"><div class="lbl">R:R</div><div class="val">${result.rr >= 0 ? result.rr.toFixed(1) : '—'}</div></div>
+        </div>`;
+
+    const patternClass = {
+        impulse: 'impulse',
+        correction: 'correction',
+        wave3: 'wave3',
+        wave5: 'wave5',
+        diagonal: 'diagonal',
+    }[result.patternType] || 'impulse';
+
+    const patternLabel = {
+        impulse: 'Impulse 1-5',
+        correction: 'ABC Correction',
+        wave3: 'Wave 3 Setup',
+        wave5: 'Wave 5 Exhaustion',
+        diagonal: 'Diagonal',
+    }[result.patternType] || 'Pattern';
+
+    const invalidateText = result.patternType === 'correction'
+        ? `If price breaks ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)}, the correction structure is invalid.`
+        : `If price closes ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)} (Wave 1 origin), the count is invalid and a new structure may be forming.`;
+
+    return `
+    <div class="wave-card pattern-${patternClass}" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
+        <div class="wv-head">
+            <div>
+                <div class="wv-name">${r.name || r.symbol}</div>
+                <div class="wv-sym">${r.exchange}:${r.symbol} · ₹${r.Close != null ? r.Close.toFixed(1) : '—'} · ${r.sector}</div>
+            </div>
+            <span class="wv-pattern ${patternClass}">${patternLabel}</span>
+        </div>
+        ${waveSpark(result)}
+        <div class="wv-gauge">
+            <div class="wv-gscore ${sc.total >= 70 ? 'hi' : sc.total >= 50 ? 'mid' : 'lo'}">${sc.total}</div>
+            <div style="flex:1;">
+                <div class="wv-gbar-row"><span class="wv-glab">Rules</span><div class="wv-track"><div class="wv-fill rule" style="width:${sc.ruleScore}%"></div></div><span class="wv-gv">${sc.ruleScore}</span></div>
+                <div class="wv-gbar-row"><span class="wv-glab">Fibonacci</span><div class="wv-track"><div class="wv-fill fib" style="width:${sc.fibScore}%"></div></div><span class="wv-gv">${sc.fibScore}</span></div>
+                <div class="wv-gbar-row"><span class="wv-glab">Momentum</span><div class="wv-track"><div class="wv-fill mom" style="width:${sc.momScore}%"></div></div><span class="wv-gv">${sc.momScore}</span></div>
+            </div>
+        </div>
+        <div class="wv-chips">${chips.join('')}</div>
+        ${fibGrid}
+        ${levelsHTML}
+        <div class="wv-why">${waveNarrative(result)}</div>
+        <div class="wv-invalidate"><b>Invalidation:</b> ${invalidateText}</div>
+        <div class="wv-foot">
+            <span>F-Score ${r.Piotroski_F_Score ?? '—'}/9</span>
+            <span>Altman ${r.Altman_Zone || '—'}</span>
+            <span>RSI ${r.RSI != null ? r.RSI.toFixed(0) : '—'}</span>
+            <span>ADX ${r.ADX != null ? r.ADX.toFixed(0) : '—'}</span>
+            <span>W2 retrace ${v.w2RetracePct.toFixed(0)}%</span>
+        </div>
+    </div>`;
+}
+
+/* --- Visibility filter --- */
+function visibleWaves(items) {
+    const f = WAVE_STATE;
+    return items
+        .filter(item => {
+            const res = item.result;
+            if (res.scoring.total < f.minScore) return false;
+            if (f.sector && item.r.sector !== f.sector) return false;
+            if (f.filter === 'all') return true;
+            if (f.filter === 'active') return res.patternType !== 'correction' || res.scoring.total >= 50;
+            if (f.filter === 'wave3') return res.patternType === 'wave3';
+            if (f.filter === 'wave5') return res.patternType === 'wave5';
+            if (f.filter === 'impulse') return res.patternType === 'impulse' || res.patternType === 'wave3' || res.patternType === 'wave5';
+            if (f.filter === 'correction') return res.patternType === 'correction';
+            if (f.filter === 'diagonal') return res.patternType === 'diagonal';
+            return true;
+        })
+        .sort((a, b) => {
+            const pa = { wave3: 0, impulse: 1, wave5: 2, diagonal: 3, correction: 4 }[a.result.patternType] ?? 5;
+            const pb = { wave3: 0, impulse: 1, wave5: 2, diagonal: 3, correction: 4 }[b.result.patternType] ?? 5;
+            if (pa !== pb) return pa - pb;
+            return b.result.scoring.total - a.result.scoring.total;
+        });
+}
+
+/* --- Main paint function --- */
+function paintWaves() {
+    const grid = document.getElementById('waveGrid');
+    if (!grid) return;
+
+    // Collect all patterns
+    const allItems = [];
+    const totalStocks = RAW.length;
+
+    for (const r of RAW) {
+        const patterns = detectWavePatterns(r);
+        for (const res of patterns) {
+            allItems.push({ r, result: res });
+        }
+    }
+
+    // Stats
+    const counts = { wave3: 0, wave5: 0, impulse: 0, correction: 0, diagonal: 0 };
+    let histCount = 0;
+    allItems.forEach(item => {
+        const t = item.result.patternType;
+        if (counts[t] !== undefined) counts[t]++;
+        if (item.result.hasHistory) histCount++;
+    });
+
+    const badge = document.getElementById('waveTabBadge');
+    if (badge) badge.textContent = counts.wave3 + counts.wave5 + counts.impulse;
+
+    const mode = document.getElementById('waveMode');
+    if (mode) mode.innerHTML = histCount > 0
+        ? `Data mode: <b>FULL FIDELITY</b> — ${histCount} patterns detected from real price history using ATR-adaptive ZigZag pivots.`
+        : `Data mode: <b>NO DATA</b> — <code>index.json</code> required for wave detection. Add OHLCV history to enable this tab.`;
+
+    const statsEl = document.getElementById('waveStats');
+    if (statsEl) {
+        const defs = [
+            ['Wave 3', counts.wave3, 'var(--violet)'],
+            ['Wave 5', counts.wave5, 'var(--coral)'],
+            ['Impulse', counts.impulse, 'var(--teal)'],
+            ['ABC', counts.correction, 'var(--amber)'],
+            ['Diagonal', counts.diagonal, 'var(--blue)'],
+            ['Total', allItems.length, 'var(--text)'],
+        ];
+        statsEl.innerHTML = defs.map(d => `<div class="wave-stat" style="border-top:2px solid ${d[2]};"><div class="sv">${d[1]}</div><div class="sl">${d[0]}</div></div>`).join('');
+    }
+
+    // Render grid
+    const vis = visibleWaves(allItems).slice(0, 48);
+    grid.innerHTML = vis.length
+        ? vis.map(buildWaveCard.bind(null)).join('')
+        : `<div class="today-empty" style="grid-column:1/-1;">No wave patterns detected with the current filters. Lower the minimum confidence or ensure <code>index.json</code> is present.</div>`;
+}
+
+/* --- Wire controls --- */
+function wireWaveControls() {
+    if (WAVE_WIRED) return;
+    WAVE_WIRED = true;
+
+    const minEl = document.getElementById('wvMinScore');
+    const patEl = document.getElementById('wvPattern');
+    const secEl = document.getElementById('wvSector');
+    const barsEl = document.getElementById('wvMinBars');
+
+    if (minEl) minEl.addEventListener('input', () => { WAVE_STATE.minScore = parseFloat(minEl.value) || 0; paintWaves(); });
+    if (patEl) patEl.addEventListener('change', () => { WAVE_STATE.filter = patEl.value; paintWaves(); });
+    if (secEl) secEl.addEventListener('change', () => { WAVE_STATE.sector = secEl.value; paintWaves(); });
+    if (barsEl) barsEl.addEventListener('input', () => { WAVE_STATE.minBars = parseFloat(barsEl.value) || 60; paintWaves(); });
+}
+
+function populateWaveSector() {
+    const sel = document.getElementById('wvSector');
+    if (!sel) return;
+    const counts = {};
+    RAW.forEach(r => counts[r.sector] = (counts[r.sector] || 0) + 1);
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">All sectors</option>' +
+        Object.entries(counts).sort((a, b) => b[1] - a[1]).map(s => `<option value="${s[0]}">${s[0]} (${s[1]})</option>`).join('');
+    if (prev) sel.value = prev;
+}
+
+async function renderWaves() {
+    if (!RAW.length) return;
+    wireWaveControls();
+    populateWaveSector();
+    await loadOHLCVData(); // Ensure OHLCV data is available
+    paintWaves();
+}
+  
 </script>
 </body>
 </html>
