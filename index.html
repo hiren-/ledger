@@ -766,6 +766,34 @@ WAVE ANALYSIS TAB — Elliott Wave engine styles
 .wv-fib-item.hit .fv{color:var(--teal);}
 .wv-confluence{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
 .wv-conf-badge{font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--teal) 12%,transparent);color:var(--teal);border:1px solid color-mix(in srgb,var(--teal) 30%,transparent);}
+/* --- Plain-language verdict + collapsible math (Wave Analysis) --- */
+.wv-verdict{
+  font-family:var(--font-display); font-size:11px; font-weight:700; letter-spacing:.03em;
+  padding:6px 12px; border-radius:20px; text-transform:uppercase; flex:0 0 auto; white-space:nowrap;
+}
+.wv-verdict.up{ background:var(--up); color:#04120F; }
+.wv-verdict.down{ background:var(--down); color:#fff; }
+.wv-verdict.caution{ background:color-mix(in srgb, var(--amber) 25%, transparent); color:var(--amber); }
+.wv-verdict.early{ background:color-mix(in srgb, var(--muted) 22%, transparent); color:var(--muted); }
+.wv-summary{
+  font-size:13px; line-height:1.55; color:var(--text); background:var(--panel-2);
+  padding:10px 12px; border-radius:8px; font-family:var(--font-body);
+}
+.wv-summary b{ color:var(--teal); }
+.wv-risk-line{
+  font-size:12px; font-family:var(--font-mono); color:var(--muted); padding:2px 2px 0;
+}
+.wv-risk-line b{ color:var(--text); }
+.wv-details{ margin-top:2px; }
+.wv-details summary{
+  cursor:pointer; font-size:11.5px; font-family:var(--font-body); font-weight:600;
+  color:var(--muted); padding:6px 2px; list-style:none; user-select:none;
+}
+.wv-details summary::-webkit-details-marker{ display:none; }
+.wv-details summary:before{ content:'▸ '; }
+.wv-details[open] summary:before{ content:'▾ '; }
+.wv-details summary:hover{ color:var(--teal); }
+.wv-details-body{ padding-top:8px; display:flex; flex-direction:column; gap:10px; }
 </style>
 </head>
 <body data-theme="dark">
@@ -810,8 +838,8 @@ WAVE ANALYSIS TAB — Elliott Wave engine styles
 <!-- ================= TODAY ================= -->
 <div class="tab-panel active" id="tab-today">
 <div class="help-panel">
-<div class="hp-title"><span class="help-icon big">?</span> Today — conviction-scored entry decisions</div>
-The Today tab now uses a <b>two-stage conviction engine</b>: first it checks the market &amp; sector regime, then it scores every stock on <b>five pillars</b> — Trend, Momentum (incl. relative strength vs the universe), Volume, Volatility setup, and Fundamentals. The result is a single <b>0–100 conviction score</b>. <b>BUY</b> requires a bullish regime + conviction ≥ 75 + zero red flags. <b>WAIT</b> means a good setup that needs a specific trigger. <b>AVOID</b> means two or more red flags, or conviction below 40. Entry, Stop, Target, and R:R are shown in rupees on every card.
+<div class="hp-title"><span class="help-icon big">?</span> Wave Analysis — what to do with each card</div>
+Each card tells you what the recent price swing looks like and what usually happens next. <b>Likely continuing up/down</b> means the strongest part of the move may still be ahead — the highest-conviction cards. <b>May be topping/bottoming out</b> means the move looks tired — good for trimming, risky for fresh entries. <b>Pullback/bounce completing</b> flags a dip or bounce that's about to end, so the earlier trend likely resumes. <b>Too early to act</b> cards are still forming — worth a watchlist add, not a trade. Every card gives you an Entry, Stop, Target and how much you're risking versus what you could make. Click "Show the wave math" on any card if you want the underlying Elliott Wave rules and Fibonacci levels.
 </div>
 <div class="regime-banner" id="regimeBanner"></div>
 <div id="todaySpringsStrip" class="hidden" style="margin-bottom:24px;"></div>
@@ -872,14 +900,14 @@ The engine detects <b>Elliott Wave structures</b> from real OHLCV data using ATR
 <div class="wave-stats" id="waveStats"></div>
 <div class="filters">
 <label>Min Confidence <input type="number" id="wvMinScore" value="40" min="0" max="100"></label>
-<label>Pattern <select id="wvPattern">
+<label>Outlook <select id="wvPattern">
 <option value="active" selected>Actionable (all)</option>
-<option value="wave3">Wave 3 setup</option>
-<option value="wave5">Wave 5 exhaustion</option>
-<option value="impulse">Impulse (1-5)</option>
-<option value="correction">Correction (ABC)</option>
-<option value="diagonal">Diagonal</option>
-<option value="all">Everything</option>
+<option value="wave3">Likely continuing</option>
+<option value="wave5">Likely topping/bottoming out</option>
+<option value="impulse">Continuing (broad)</option>
+<option value="correction">Pullback/bounce completing</option>
+<option value="diagonal">Weakening trend</option>
+<option value="all">Everything, incl. too-early</option>
 </select></label>
 <label>Sector <select id="wvSector"><option value="">All sectors</option></select></label>
 <label>Min Bars <input type="number" id="wvMinBars" value="60" min="30" max="500"></label>
@@ -4849,17 +4877,18 @@ function buildWaveCard(result) {
     const v = result.validation || { rules: { rule1: false, rule2: false, rule3: false }, isDiagonal: false, w2RetracePct: 0, w3W1Ratio: 0, w5W1Ratio: 0 };
     const sc = result.scoring || { total: 0, ruleScore: 0, fibScore: 0, momScore: 0 };
     const isBull = !!result.isBullish;
+    const action = waveAction(result);
+
+    const risk = Math.abs(result.entry - result.stopLevel);
+    const reward = Math.abs(result.w3target - result.entry);
+    const rrText = result.rr >= 0 ? result.rr.toFixed(1) : '—';
 
     const chips = [];
-    chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
-    chips.push(v.rules.rule1 ? `<span class="wv-chip hot">✓ Rule 1</span>` : `<span class="wv-chip warn">✗ Rule 1</span>`);
-    chips.push(v.rules.rule2 ? `<span class="wv-chip hot">✓ Rule 2</span>` : `<span class="wv-chip warn">✗ Rule 2</span>`);
-    if (v.rules.rule3) chips.push(`<span class="wv-chip hot">✓ Rule 3</span>`);
-    else if (v.rules.isDiagonal) chips.push(`<span class="wv-chip zap">Diagonal</span>`);
-    else chips.push(`<span class="wv-chip warn">✗ Rule 3</span>`);
     if (result.patternType === 'wave3') chips.push(`<span class="wv-chip zap">⚡ Wave 3 setup</span>`);
     if (result.patternType === 'wave5') chips.push(`<span class="wv-chip warn">⚠ Wave 5 exhaustion</span>`);
     if (result.patternType === 'correction') chips.push(`<span class="wv-chip">ABC correction</span>`);
+    if (result.patternType === 'diagonal') chips.push(`<span class="wv-chip warn">Diagonal</span>`);
+    chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
 
     const fibGrid = result.patternType !== 'correction' ? `
         <div class="wv-fib-grid">
@@ -4882,7 +4911,7 @@ function buildWaveCard(result) {
             <div class="wv-level"><div class="lbl">${result.patternType === 'correction' ? 'C End' : 'Entry'}</div><div class="val">₹${result.entry.toFixed(1)}</div></div>
             <div class="wv-level"><div class="lbl">Stop / Invalid</div><div class="val down">₹${result.stopLevel.toFixed(1)}</div></div>
             <div class="wv-level"><div class="lbl">Target</div><div class="val up">₹${result.w3target.toFixed(1)}</div></div>
-            <div class="wv-level"><div class="lbl">R:R</div><div class="val">${result.rr >= 0 ? result.rr.toFixed(1) : '—'}</div></div>
+            <div class="wv-level"><div class="lbl">R:R</div><div class="val">${rrText}</div></div>
         </div>`;
 
     const patternClass = {
@@ -4890,14 +4919,16 @@ function buildWaveCard(result) {
         wave5: 'wave5', diagonal: 'diagonal',
     }[result.patternType] || 'impulse';
 
-    const patternLabel = {
-        impulse: 'Impulse 1-5', correction: 'ABC Correction', wave3: 'Wave 3 Setup',
-        wave5: 'Wave 5 Exhaustion', diagonal: 'Diagonal',
-    }[result.patternType] || 'Pattern';
-
     const invalidateText = result.patternType === 'correction'
-        ? `If price breaks ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)}, the correction structure is invalid.`
-        : `If price closes ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)} (Wave 1 origin), the count is invalid and a new structure may be forming.`;
+        ? `If price breaks ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)}, this read is wrong.`
+        : `If price closes ${isBull ? 'below' : 'above'} ₹${result.invalidation.toFixed(1)}, this read is wrong and a new structure may be forming.`;
+
+    const ruleBits = [];
+    ruleBits.push(v.rules.rule1 ? `<span class="wv-chip hot">✓ Rule 1</span>` : `<span class="wv-chip warn">✗ Rule 1</span>`);
+    ruleBits.push(v.rules.rule2 ? `<span class="wv-chip hot">✓ Rule 2</span>` : `<span class="wv-chip warn">✗ Rule 2</span>`);
+    if (v.rules.rule3) ruleBits.push(`<span class="wv-chip hot">✓ Rule 3</span>`);
+    else if (v.rules.isDiagonal) ruleBits.push(`<span class="wv-chip zap">Diagonal overlap allowed</span>`);
+    else ruleBits.push(`<span class="wv-chip warn">✗ Rule 3</span>`);
 
     return `
     <div class="wave-card pattern-${patternClass}" onclick="openDetailBySymbol('${(r.symbol||'').replace(/'/g,'')}')">
@@ -4906,32 +4937,101 @@ function buildWaveCard(result) {
                 <div class="wv-name">${r.name || r.symbol}</div>
                 <div class="wv-sym">${r.exchange}:${r.symbol} · ₹${r.Close != null ? r.Close.toFixed(1) : '—'} · ${r.sector}</div>
             </div>
-            <span class="wv-pattern ${patternClass}">${patternLabel}</span>
+            <span class="wv-verdict ${action.cls}">${action.label}</span>
         </div>
         ${waveSpark(result)}
-        <div class="wv-gauge">
-            <div class="wv-gscore ${sc.total >= 70 ? 'hi' : sc.total >= 50 ? 'mid' : 'lo'}">${sc.total}</div>
-            <div style="flex:1;">
-                <div class="wv-gbar-row"><span class="wv-glab">Rules</span><div class="wv-track"><div class="wv-fill rule" style="width:${sc.ruleScore}%"></div></div><span class="wv-gv">${sc.ruleScore}</span></div>
-                <div class="wv-gbar-row"><span class="wv-glab">Fibonacci</span><div class="wv-track"><div class="wv-fill fib" style="width:${sc.fibScore}%"></div></div><span class="wv-gv">${sc.fibScore}</span></div>
-                <div class="wv-gbar-row"><span class="wv-glab">Momentum</span><div class="wv-track"><div class="wv-fill mom" style="width:${sc.momScore}%"></div></div><span class="wv-gv">${sc.momScore}</span></div>
-            </div>
-        </div>
+        <div class="wv-summary">${action.summary}</div>
         <div class="wv-chips">${chips.join('')}</div>
         ${fibGrid}
         ${levelsHTML}
-        <div class="wv-why">${waveNarrative(result)}</div>
-        <div class="wv-invalidate"><b>Invalidation:</b> ${invalidateText}</div>
-        <div class="wv-foot">
-            <span>F-Score ${r.Piotroski_F_Score ?? '—'}/9</span>
-            <span>Altman ${r.Altman_Zone || '—'}</span>
-            <span>RSI ${r.RSI != null ? r.RSI.toFixed(0) : '—'}</span>
-            <span>ADX ${r.ADX != null ? r.ADX.toFixed(0) : '—'}</span>
-            <span>W2 retrace ${v.w2RetracePct.toFixed(0)}%</span>
-        </div>
+        <div class="wv-risk-line">Risking <b>₹${risk.toFixed(1)}</b> per share to potentially make <b>₹${reward.toFixed(1)}</b> — that's an R:R of <b>${rrText}</b>. ${result.rr >= 2 ? 'A healthy ratio.' : result.rr > 0 && result.rr < 1.5 ? 'A thin ratio — size this small if you take it.' : ''}</div>
+        <div class="wv-invalidate"><b>This is wrong if:</b> ${invalidateText}</div>
+        <details class="wv-details" onclick="event.stopPropagation()">
+            <summary>Show the wave math (confidence ${sc.total}/100)</summary>
+            <div class="wv-details-body">
+                <div class="wv-gauge">
+                    <div class="wv-gscore ${sc.total >= 70 ? 'hi' : sc.total >= 50 ? 'mid' : 'lo'}">${sc.total}</div>
+                    <div style="flex:1;">
+                        <div class="wv-gbar-row"><span class="wv-glab">Rules</span><div class="wv-track"><div class="wv-fill rule" style="width:${sc.ruleScore}%"></div></div><span class="wv-gv">${sc.ruleScore}</span></div>
+                        <div class="wv-gbar-row"><span class="wv-glab">Fibonacci</span><div class="wv-track"><div class="wv-fill fib" style="width:${sc.fibScore}%"></div></div><span class="wv-gv">${sc.fibScore}</span></div>
+                        <div class="wv-gbar-row"><span class="wv-glab">Momentum</span><div class="wv-track"><div class="wv-fill mom" style="width:${sc.momScore}%"></div></div><span class="wv-gv">${sc.momScore}</span></div>
+                    </div>
+                </div>
+                <div class="wv-chips">${ruleBits.join('')}</div>
+                <div class="wv-why">${waveNarrative(result)}</div>
+                <div class="wv-foot">
+                    <span>F-Score ${r.Piotroski_F_Score ?? '—'}/9</span>
+                    <span>Altman ${r.Altman_Zone || '—'}</span>
+                    <span>RSI ${r.RSI != null ? r.RSI.toFixed(0) : '—'}</span>
+                    <span>ADX ${r.ADX != null ? r.ADX.toFixed(0) : '—'}</span>
+                    <span>W2 retrace ${v.w2RetracePct.toFixed(0)}%</span>
+                </div>
+            </div>
+        </details>
     </div>`;
 }
 
+/* Plain-language verdict + one-line summary for a wave result */
+function waveAction(result) {
+    const sc = result.scoring.total;
+    const bull = result.isBullish;
+    const type = result.patternType;
+
+    // Too early to act, regardless of pattern type
+    if (sc < 50) {
+        return {
+            cls: 'early',
+            label: 'Too early to act',
+            summary: `The pattern isn't confirmed enough yet (confidence ${sc}/100). Worth watching, not worth acting on.`,
+        };
+    }
+
+    if (type === 'wave3' || (type === 'impulse' && sc >= 60)) {
+        return {
+            cls: bull ? 'up' : 'down',
+            label: bull ? 'Likely continuing up' : 'Likely continuing down',
+            summary: bull
+                ? `Price is in a strong up-move and the biggest gains may still be ahead.`
+                : `Price is in a strong down-move and the biggest losses may still be ahead — avoid catching this falling knife.`,
+        };
+    }
+
+    if (type === 'wave5') {
+        return {
+            cls: 'caution',
+            label: bull ? 'May be topping out' : 'May be bottoming out',
+            summary: bull
+                ? `This looks like the last leg of the up-move. Upside may be limited — consider taking profits rather than entering fresh.`
+                : `This looks like the last leg of the down-move. A bounce may be close — risky to short here.`,
+        };
+    }
+
+    if (type === 'correction') {
+        return {
+            cls: bull ? 'up' : 'down',
+            label: bull ? 'Pullback completing — reversal up likely' : 'Bounce completing — reversal down likely',
+            summary: bull
+                ? `Price pulled back and is finishing that dip. A resumption of the earlier up-move is the more likely next move.`
+                : `Price bounced and is finishing that bounce. A resumption of the earlier down-move is the more likely next move.`,
+        };
+    }
+
+    if (type === 'diagonal') {
+        return {
+            cls: 'caution',
+            label: 'Weakening trend',
+            summary: `The move is losing steam — each swing is smaller than the last. Often precedes a sharp reversal.`,
+        };
+    }
+
+    return {
+        cls: bull ? 'up' : 'down',
+        label: bull ? 'Structure forming up' : 'Structure forming down',
+        summary: `A developing wave structure with moderate confidence.`,
+    };
+}
+
+   
 function visibleWaves(items) {
     const f = WAVE_STATE;
 
@@ -5023,34 +5123,24 @@ function visibleWaves(items) {
             return true;
         })
 
-        .sort((a, b) => {
-
-            const priority = {
-                wave3: 0,
-                impulse: 1,
-                wave5: 2,
-                diagonal: 3,
-                correction: 4
+                .sort((a, b) => {
+            // Actionable patterns (continuing moves with decent R:R) surface first;
+            // "too early" and low-confidence cards sink to the bottom.
+            const rank = (item) => {
+                const sc = item.result.scoring.total;
+                const t = item.result.patternType;
+                if (sc < 50) return 5;                 // too early
+                if (t === 'wave3' || t === 'impulse') return 0;  // continuing
+                if (t === 'correction') return 1;        // reversal setup
+                if (t === 'wave5') return 2;             // caution
+                if (t === 'diagonal') return 3;          // weakening
+                return 4;
             };
-
-            const pa =
-                priority[
-                    a.result.patternType
-                ] ?? 5;
-
-            const pb =
-                priority[
-                    b.result.patternType
-                ] ?? 5;
-
-            if (pa !== pb) {
-                return pa - pb;
-            }
-
-            return (
-                b.result.scoring.total -
-                a.result.scoring.total
-            );
+            const ra = rank(a), rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            const rrA = a.result.rr || 0, rrB = b.result.rr || 0;
+            if (rrB !== rrA) return rrB - rrA;
+            return b.result.scoring.total - a.result.scoring.total;
         });
 }
 
