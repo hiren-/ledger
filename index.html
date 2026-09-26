@@ -4826,6 +4826,63 @@ function detectWavePatterns(r) {
 
     return unique;
 }
+
+/* Detects setups whose entry/target no longer bracket the current price
+   (because price has moved on since the pivots were formed) and re-anchors
+   Entry/Stop/Target to the current price, keeping the original R:R shape. */
+function refreshWaveLevels(result) {
+    const price = result.currentPrice;
+    if (!price || price <= 0) return result;
+    const isBull = result.isBullish;
+
+    const targetAhead = isBull ? (result.w3target > price) : (result.w3target < price);
+    const entryNearPrice = Math.abs(price - result.entry) / price <= 0.05; // within 5%
+
+    if (targetAhead && entryNearPrice) {
+        result.stale = false;
+        return result; // levels are still live, leave them alone
+    }
+
+    // STALE — price has moved past the original pivots. Re-anchor to current price.
+    result.stale = true;
+
+    const originalRewardDist = Math.abs(result.w3target - result.entry);
+    const originalRiskDist = Math.abs(result.entry - result.stopLevel);
+    const riskDist = originalRiskDist > 0 ? originalRiskDist : price * 0.05;
+    const rewardDist = originalRewardDist > 0 ? originalRewardDist : riskDist * 2;
+
+    const atrPct = (result.r && result.r['ATR_%'] != null) ? result.r['ATR_%'] : null;
+    let newRiskDist;
+    if (atrPct != null) {
+        newRiskDist = price * Math.max(atrPct * 2, 5) / 100;
+    } else {
+        const scale = result.entry > 0 ? price / result.entry : 1;
+        newRiskDist = riskDist * scale;
+    }
+    const newRewardDist = newRiskDist * (rewardDist / riskDist);
+
+    result.entry = price;
+    if (isBull) {
+        result.stopLevel = price - newRiskDist;
+        result.w3target = price + newRewardDist;
+    } else {
+        result.stopLevel = price + newRiskDist;
+        result.w3target = price - newRewardDist;
+    }
+    result.invalidation = result.stopLevel;
+
+    const risk = Math.abs(result.entry - result.stopLevel);
+    const reward = Math.abs(result.w3target - result.entry);
+    result.rr = risk > 0 ? reward / risk : 0;
+
+    // The original Fibonacci W5 projections no longer apply once re-anchored
+    result.w5target1 = null;
+    result.w5target2 = null;
+
+    return result;
+}
+
+  
 function waveNarrative(result) {
     const v = result.validation;
     const bits = [];
@@ -4889,9 +4946,9 @@ function buildWaveCard(result) {
     if (result.patternType === 'correction') chips.push(`<span class="wv-chip">ABC correction</span>`);
     if (result.patternType === 'diagonal') chips.push(`<span class="wv-chip warn">Diagonal</span>`);
     chips.push(`<span class="wv-chip">${result.degree} degree</span>`);
-
-    const fibGrid = result.patternType !== 'correction' ? `
-        <div class="wv-fib-grid">
+    if (result.stale) chips.push(`<span class="wv-chip">📍 Re-anchored to current price</span>`);
+      const fibGrid = (result.patternType !== 'correction' && !result.stale) ? `
+      <div class="wv-fib-grid">
             <div class="wv-fib-item ${isBull && result.w3target > 0 ? 'hit' : ''}">
                 <div class="fl">W3 Target</div>
                 <div class="fv">${result.w3target != null ? '₹' + result.w3target.toFixed(0) : '—'}</div>
@@ -5161,7 +5218,7 @@ async function paintWaves() {
         for (let i = 0; i < totalStocks; i++) {
              const r = RAW[i];
              const patterns = detectWavePatterns(r);
-             for (const res of patterns) { res.r = r; allItems.push({ r, result: res }); }   // ← added res.r = r
+             for (const res of patterns) { res.r = r; refreshWaveLevels(res); allItems.push({ r, result: res }); }
              if (i % 20 === 19) await new Promise(res => setTimeout(res, 0));
          }
 
